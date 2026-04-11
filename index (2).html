@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>StudyHome Tracker</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+#root{height:100%}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:3px}
+input,select,textarea,button{font-family:inherit;outline:none;border:none}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.5}
+@keyframes floatA{0%,100%{transform:translateY(0)}50%{transform:translateY(-22px)}}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(18px)}}
+@keyframes drift{0%{transform:translate(0,0)}33%{transform:translate(30px,-18px)}66%{transform:translate(-20px,25px)}100%{transform:translate(0,0)}}
+@keyframes twinkle{0%,100%{opacity:.1;transform:scale(1)}50%{opacity:.65;transform:scale(1.5)}}
+@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes slideDown{from{transform:translateY(-40px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes slideLeft{from{transform:translateX(50px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideRight{from{transform:translateX(-50px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes popIn{from{transform:scale(.65) translateY(28px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes alarmPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.65)}50%{box-shadow:0 0 0 22px rgba(239,68,68,0)}}
+@keyframes toastIn{from{transform:translateY(80px) scale(.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+@keyframes toastOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.85)}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.su{animation:slideUp .4s cubic-bezier(.22,.61,.36,1) both}
+.sd{animation:slideDown .4s cubic-bezier(.22,.61,.36,1) both}
+.sl{animation:slideLeft .36s cubic-bezier(.22,.61,.36,1) both}
+.sr{animation:slideRight .36s cubic-bezier(.22,.61,.36,1) both}
+.fi{animation:fadeIn .3s ease both}
+.sc{animation:scaleIn .36s cubic-bezier(.22,.61,.36,1) both}
+.pi{animation:popIn .36s cubic-bezier(.34,1.56,.64,1) both}
+.shake{animation:shake .4s ease}
+.card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:16px;backdrop-filter:blur(10px)}
+.card-sm{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px}
+.glass{background:rgba(0,0,0,.25);backdrop-filter:blur(28px);border-bottom:1px solid rgba(255,255,255,.07)}
+.inp{width:100%;padding:.75rem 1rem;border-radius:12px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:white;font-size:15px;transition:border .2s,background .2s}
+.inp:focus{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.11)}
+.inp::placeholder{color:rgba(255,255,255,.3)}
+.inp-err{border-color:#ef4444 !important}
+.inp-err:focus{border-color:#ef4444 !important}
+.btn-ghost{padding:.75rem 1rem;border-radius:12px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);font-weight:600;border:1.5px solid rgba(255,255,255,.12);cursor:pointer;transition:background .2s}
+.btn-ghost:hover{background:rgba(255,255,255,.14)}
+.btn-danger{padding:.75rem 1rem;border-radius:12px;background:rgba(239,68,68,.15);color:#f87171;font-weight:700;border:1.5px solid rgba(239,68,68,.3);cursor:pointer;transition:background .2s}
+.btn-danger:hover{background:rgba(239,68,68,.28)}
+select option{background:#1a1530;color:white}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback}=React;
+
+/* ─── Storage Keys ─────────────────────────────────────────────────── */
+const ACCT_KEY  = 'sh_accounts_v1';
+const SESS_KEY  = 'sh_session_v1';
+const DATA_KEY  = u => `sh_data_v1_${u}`;
+
+/* ─── Simple hash (no crypto needed for this use case) ─────────────── */
+function hashPw(s){ let h=0; for(let i=0;i<s.length;i++) h=(Math.imul(31,h)+s.charCodeAt(i))|0; return 'h'+Math.abs(h).toString(36)+s.length.toString(36); }
+
+/* ─── Account helpers ──────────────────────────────────────────────── */
+function getAccounts(){ try{ return JSON.parse(localStorage.getItem(ACCT_KEY)||'{}'); }catch(e){ return {}; } }
+function saveAccounts(a){ localStorage.setItem(ACCT_KEY,JSON.stringify(a)); }
+function getUserData(u){ try{ return JSON.parse(localStorage.getItem(DATA_KEY(u))||'null'); }catch(e){ return null; } }
+function saveUserData(u,d){ localStorage.setItem(DATA_KEY(u),JSON.stringify(d)); }
+function getSession(){ return localStorage.getItem(SESS_KEY)||null; }
+function setSession(u){ if(u) localStorage.setItem(SESS_KEY,u); else localStorage.removeItem(SESS_KEY); }
+
+/* ─── Constants ────────────────────────────────────────────────────── */
+const BG=[
+  {id:'aurora', name:'Aurora', c1:'#0f0c29',c2:'#302b63',c3:'#24243e',ac:'#a78bfa',ac2:'#7c3aed'},
+  {id:'ocean',  name:'Ocean',  c1:'#0f2027',c2:'#203a43',c3:'#2c5364',ac:'#38bdf8',ac2:'#0284c7'},
+  {id:'forest', name:'Forest', c1:'#052e16',c2:'#14532d',c3:'#166534',ac:'#4ade80',ac2:'#16a34a'},
+  {id:'sunset', name:'Sunset', c1:'#1c0a00',c2:'#7c2d12',c3:'#92400e',ac:'#fb923c',ac2:'#ea580c'},
+  {id:'cosmic', name:'Cosmic', c1:'#020617',c2:'#0f172a',c3:'#1e1b4b',ac:'#e879f9',ac2:'#a21caf'},
+  {id:'cherry', name:'Cherry', c1:'#1a0010',c2:'#4a0020',c3:'#7f1d1d',ac:'#fb7185',ac2:'#e11d48'},
+  {id:'slate',  name:'Slate',  c1:'#0d1117',c2:'#161b22',c3:'#21262d',ac:'#58a6ff',ac2:'#1f6feb'},
+  {id:'ember',  name:'Ember',  c1:'#1c1007',c2:'#3d2100',c3:'#5e3300',ac:'#fbbf24',ac2:'#d97706'},
+];
+const CLASS_COLORS=['#a78bfa','#38bdf8','#4ade80','#fb923c','#f472b6','#facc15','#34d399','#818cf8','#f87171','#2dd4bf','#c084fc','#67e8f9'];
+const ASGN_TYPES=['Homework','Quiz','Test','Project','Lab','Essay','Presentation','Other'];
+const GRADES=['6th','7th','8th','9th','10th','11th','12th','College Freshman','College Sophomore','College Junior','College Senior'];
+const PRIORITY=['Low','Medium','High'];
+
+/* ─── Helpers ──────────────────────────────────────────────────────── */
+const gid=()=>Math.random().toString(36).slice(2,11);
+const daysUntil=ds=>{if(!ds)return 999;const n=new Date();n.setHours(0,0,0,0);const d=new Date(ds);d.setHours(0,0,0,0);return Math.round((d-n)/86400000);};
+const fmtDate=ds=>{if(!ds)return'';return new Date(ds+' ').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});};
+const todayPlus=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const initData=()=>({schoolInfo:null,classes:[],assignments:[],tasks:[],projects:[],goals:[],parentPw:'parent123',bgIdx:0,timeWindow:7,createdAt:new Date().toISOString()});
+
+/* ─── Particles ────────────────────────────────────────────────────── */
+function Particles({ac}){
+  const blobs=useRef(Array.from({length:12},(_,i)=>({id:i,w:Math.random()*90+20,x:Math.random()*100,y:Math.random()*100,dur:Math.random()*10+6,del:Math.random()*-14,t:i%3}))).current;
+  const stars=useRef(Array.from({length:55},(_,i)=>({id:i,x:Math.random()*100,y:Math.random()*100,dur:Math.random()*4+2,del:Math.random()*-9}))).current;
+  return(
+    <div style={{position:'fixed',inset:0,pointerEvents:'none',overflow:'hidden',zIndex:0}}>
+      {blobs.map(b=><div key={b.id} style={{position:'absolute',left:`${b.x}%`,top:`${b.y}%`,width:b.w,height:b.w,borderRadius:'50%',background:`radial-gradient(circle,${ac}22,transparent)`,animation:`${['floatA','floatB','drift'][b.t]} ${b.dur}s ${b.del}s ease-in-out infinite`}}/>)}
+      {stars.map(s=><div key={s.id} style={{position:'absolute',left:`${s.x}%`,top:`${s.y}%`,width:2,height:2,borderRadius:'50%',background:'white',animation:`twinkle ${s.dur}s ${s.del}s ease-in-out infinite`}}/>)}
+    </div>
+  );
+}
+
+/* ─── Toast ────────────────────────────────────────────────────────── */
+function Toast({msg,type,onDone}){
+  const [out,setOut]=useState(false);
+  useEffect(()=>{const t=setTimeout(()=>{setOut(true);setTimeout(onDone,350);},2400);return()=>clearTimeout(t);},[]);
+  const col=type==='error'?'#ef4444':type==='warn'?'#f59e0b':'#4ade80';
+  const ic=type==='error'?'✕':type==='warn'?'⚠':type==='save'?'💾':'✓';
+  return(
+    <div style={{position:'fixed',bottom:'1.5rem',left:'50%',transform:'translateX(-50%)',zIndex:9999,animation:out?'toastOut .35s ease both':'toastIn .35s ease both',whiteSpace:'nowrap'}}>
+      <div style={{display:'flex',alignItems:'center',gap:'10px',padding:'.7rem 1.2rem',borderRadius:40,background:'rgba(20,18,35,.95)',border:`1px solid ${col}44`,backdropFilter:'blur(20px)',boxShadow:`0 8px 32px rgba(0,0,0,.5),0 0 0 1px ${col}22`}}>
+        <span style={{width:22,height:22,borderRadius:'50%',background:`${col}22`,color:col,fontSize:12,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700}}>{ic}</span>
+        <span style={{color:'white',fontSize:14,fontWeight:500}}>{msg}</span>
+      </div>
+    </div>
+  );
+}
+
+function useToast(){
+  const [toasts,setToasts]=useState([]);
+  const show=(msg,type='success')=>setToasts(p=>[...p,{id:gid(),msg,type}]);
+  const remove=id=>setToasts(p=>p.filter(t=>t.id!==id));
+  const ToastContainer=()=><>{toasts.map((t,i)=><Toast key={t.id} msg={t.msg} type={t.type} onDone={()=>remove(t.id)}/>)}</>;
+  return{show,ToastContainer};
+}
+
+/* ─── Modal ─────────────────────────────────────────────────────────── */
+function Modal({children,onClose,wide}){
+  useEffect(()=>{document.body.style.overflow='hidden';return()=>{document.body.style.overflow='';}},[]);
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:500,background:'rgba(0,0,0,.7)',display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem',animation:'fadeIn .2s ease both',backdropFilter:'blur(4px)'}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="pi" style={{width:'100%',maxWidth:wide?560:460,maxHeight:'90vh',overflowY:'auto',borderRadius:22,background:'linear-gradient(145deg,#1e1a36,#141228)',border:'1px solid rgba(255,255,255,.12)',padding:'1.75rem',boxShadow:'0 32px 80px rgba(0,0,0,.7)'}}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ─── PwModal ───────────────────────────────────────────────────────── */
+function PwModal({title,hint,onConfirm,onCancel,ac}){
+  const[v,setV]=useState('');const[err,setErr]=useState(false);const[shk,setShk]=useState(false);
+  const go=()=>{if(!onConfirm(v)){setErr(true);setShk(true);setTimeout(()=>{setErr(false);setShk(false);},600);}};
+  return(
+    <Modal onClose={onCancel}>
+      <div style={{display:'flex',alignItems:'center',gap:'.75rem',marginBottom:'1.25rem'}}>
+        <div style={{width:40,height:40,borderRadius:12,background:`${ac}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>🔐</div>
+        <div><h3 style={{color:'white',fontSize:17}}>{title}</h3>{hint&&<p style={{color:'rgba(200,200,220,.55)',fontSize:12,marginTop:2}}>{hint}</p>}</div>
+      </div>
+      <input type="password" className={`inp${err?' inp-err':''} ${shk?'shake':''}`} style={{marginBottom:'1.25rem'}} placeholder="Enter password…" value={v} onChange={e=>setV(e.target.value)} onKeyDown={e=>e.key==='Enter'&&go()} autoFocus/>
+      {err&&<p style={{color:'#f87171',fontSize:12,marginTop:'-1rem',marginBottom:'.75rem'}}>Incorrect password. Try again.</p>}
+      <div style={{display:'flex',gap:'.75rem'}}>
+        <button className="btn-ghost" style={{flex:1}} onClick={onCancel}>Cancel</button>
+        <button onClick={go} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'white',fontWeight:700,cursor:'pointer',transition:'opacity .2s'}} onMouseOver={e=>e.currentTarget.style.opacity='.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>Confirm</button>
+      </div>
+    </Modal>
+  );
+}
+
+/* ─── Auth Screen ───────────────────────────────────────────────────── */
+function AuthScreen({onAuth,bg}){
+  const[mode,setMode]=useState('login');
+  const[loading,setLoading]=useState(false);
+  const[f,setF]=useState({username:'',password:'',confirm:'',displayName:''});
+  const[errs,setErrs]=useState({});
+  const set=k=>v=>setF(p=>({...p,[k]:v}));
+  const clrErr=k=>setErrs(p=>({...p,[k]:''}));
+
+  const login=()=>{
+    const e={};
+    if(!f.username.trim())e.username='Username is required';
+    if(!f.password)e.password='Password is required';
+    if(Object.keys(e).length){setErrs(e);return;}
+    const accts=getAccounts();
+    const uname=f.username.trim().toLowerCase();
+    if(!accts[uname]){setErrs({username:'No account found with that username'});return;}
+    if(accts[uname].pwHash!==hashPw(f.password)){setErrs({password:'Incorrect password'});return;}
+    setLoading(true);
+    setTimeout(()=>{setSession(uname);onAuth(uname,accts[uname]);setLoading(false);},600);
+  };
+
+  const register=()=>{
+    const e={};
+    if(!f.username.trim())e.username='Username is required';
+    else if(f.username.trim().length<3)e.username='Must be at least 3 characters';
+    else if(!/^[a-zA-Z0-9_]+$/.test(f.username.trim()))e.username='Only letters, numbers, underscores';
+    if(!f.displayName.trim())e.displayName='Display name is required';
+    if(!f.password)e.password='Password is required';
+    else if(f.password.length<6)e.password='Must be at least 6 characters';
+    if(f.password!==f.confirm)e.confirm='Passwords do not match';
+    if(Object.keys(e).length){setErrs(e);return;}
+    const accts=getAccounts();
+    const uname=f.username.trim().toLowerCase();
+    if(accts[uname]){setErrs({username:'That username is already taken'});return;}
+    const newAcct={pwHash:hashPw(f.password),displayName:f.displayName.trim(),createdAt:new Date().toISOString()};
+    accts[uname]=newAcct;
+    saveAccounts(accts);
+    saveUserData(uname,initData());
+    setLoading(true);
+    setTimeout(()=>{setSession(uname);onAuth(uname,newAcct);setLoading(false);},600);
+  };
+
+  const submit=()=>mode==='login'?login():register();
+
+  const inp=(key,type='text',ph)=>(
+    <div style={{marginBottom:'1rem'}}>
+      <input type={type} className={`inp${errs[key]?' inp-err':''}`} placeholder={ph} value={f[key]} onChange={e=>{set(key)(e.target.value);clrErr(key);}} onKeyDown={e=>e.key==='Enter'&&submit()} autoComplete={type==='password'?'current-password':'username'}/>
+      {errs[key]&&<p style={{color:'#f87171',fontSize:12,marginTop:4}}>{errs[key]}</p>}
+    </div>
+  );
+
+  return(
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden',background:`linear-gradient(135deg,${bg.c1},${bg.c2},${bg.c3})`,backgroundSize:'400% 400%',animation:'gradShift 9s ease infinite'}}>
+      <Particles ac={bg.ac}/>
+      <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:420,padding:'1.5rem'}}>
+        {/* Logo */}
+        <div className="sc" style={{textAlign:'center',marginBottom:'2rem'}}>
+          <div style={{width:76,height:76,borderRadius:22,background:`linear-gradient(135deg,${bg.ac},${bg.ac2})`,margin:'0 auto 1rem',display:'flex',alignItems:'center',justifyContent:'center',fontSize:34,boxShadow:`0 0 50px ${bg.ac}44`}}>📚</div>
+          <h1 style={{color:'white',fontSize:26,fontWeight:800,letterSpacing:'-.5px'}}>StudyHome</h1>
+          <p style={{color:'rgba(255,255,255,.45)',fontSize:13,marginTop:4}}>Track school &amp; home — all in one place</p>
+        </div>
+
+        {/* Card */}
+        <div className="su" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:24,padding:'2rem',backdropFilter:'blur(30px)',boxShadow:'0 24px 64px rgba(0,0,0,.5)'}}>
+          {/* Mode toggle */}
+          <div style={{display:'flex',background:'rgba(0,0,0,.25)',borderRadius:12,padding:3,marginBottom:'1.75rem',border:'1px solid rgba(255,255,255,.08)'}}>
+            {[['login','Sign In'],['register','Create Account']].map(([m,l])=>(
+              <button key={m} onClick={()=>{setMode(m);setErrs({});setF({username:'',password:'',confirm:'',displayName:''}); }} style={{flex:1,padding:'.6rem',borderRadius:9,fontWeight:700,fontSize:14,cursor:'pointer',transition:'all .25s',background:mode===m?`linear-gradient(135deg,${bg.ac}dd,${bg.ac})`:'transparent',color:mode===m?'white':'rgba(255,255,255,.45)',boxShadow:mode===m?`0 2px 12px ${bg.ac}44`:'none'}}>{l}</button>
+            ))}
+          </div>
+
+          {mode==='register'&&(
+            <>
+              <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5}}>Display Name</label>
+              {inp('displayName','text','Your full name…')}
+            </>
+          )}
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5}}>Username</label>
+          {inp('username','text',mode==='login'?'Enter your username…':'Choose a username (letters, numbers, _)')}
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5}}>Password</label>
+          {inp('password','password',mode==='login'?'Enter your password…':'Choose a password (min 6 chars)')}
+          {mode==='register'&&(
+            <>
+              <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5}}>Confirm Password</label>
+              {inp('confirm','password','Re-enter your password…')}
+            </>
+          )}
+
+          <button onClick={submit} disabled={loading} style={{width:'100%',padding:'1rem',borderRadius:14,fontSize:16,fontWeight:700,cursor:'pointer',background:loading?'rgba(255,255,255,.1)':`linear-gradient(135deg,${bg.ac},${bg.ac2})`,color:loading?'rgba(255,255,255,.4)':'white',boxShadow:loading?'none':`0 6px 24px ${bg.ac}44`,transition:'all .3s',marginTop:'.25rem',display:'flex',alignItems:'center',justifyContent:'center',gap:'.5rem'}}>
+            {loading?<span style={{width:18,height:18,borderRadius:'50%',border:'2px solid rgba(255,255,255,.3)',borderTopColor:'white',animation:'spin .6s linear infinite',display:'inline-block'}}/>:null}
+            {loading?'Please wait…':mode==='login'?'Sign In →':'Create Account →'}
+          </button>
+
+          {mode==='login'&&(
+            <p style={{textAlign:'center',color:'rgba(255,255,255,.3)',fontSize:12,marginTop:'1.25rem'}}>New here? Switch to "Create Account" above</p>
+          )}
+        </div>
+
+        <p style={{textAlign:'center',color:'rgba(255,255,255,.2)',fontSize:11,marginTop:'1.5rem'}}>Data is stored locally on this device only</p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Splash ─────────────────────────────────────────────────────────── */
+function Splash({bg,onDone}){
+  const[p,setP]=useState(0);
+  useEffect(()=>{
+    const t=[setTimeout(()=>setP(1),200),setTimeout(()=>setP(2),650),setTimeout(()=>setP(3),1050),setTimeout(()=>onDone(),1800)];
+    return()=>t.forEach(clearTimeout);
+  },[]);
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',background:`linear-gradient(135deg,${bg.c1},${bg.c2},${bg.c3})`,backgroundSize:'400% 400%',animation:'gradShift 9s ease infinite',transition:'opacity .4s',opacity:p>=3?.0:1}}>
+      <Particles ac={bg.ac}/>
+      <div style={{position:'relative',zIndex:1,textAlign:'center'}}>
+        <div className={p>=1?'sc':''} style={{opacity:p>=1?1:0}}>
+          <div style={{width:90,height:90,borderRadius:24,background:`linear-gradient(135deg,${bg.ac},${bg.ac2})`,margin:'0 auto 1.25rem',display:'flex',alignItems:'center',justifyContent:'center',fontSize:42,boxShadow:`0 0 60px ${bg.ac}55`}}>📚</div>
+        </div>
+        <div className={p>=2?'su':''} style={{opacity:p>=2?1:0}}>
+          <h1 style={{color:'white',fontSize:36,fontWeight:800,letterSpacing:'-1px',textShadow:`0 0 40px ${bg.ac}77`}}>StudyHome</h1>
+          <p style={{color:'rgba(255,255,255,.45)',fontSize:15,marginTop:'.4rem'}}>Welcome back</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── School Sign-in (profile setup) ─────────────────────────────────── */
+function SchoolSetup({onSave,ac,existing}){
+  const[f,setF]=useState(existing||{name:'',email:'',schoolId:'',grade:''});
+  const set=k=>v=>setF(p=>({...p,[k]:v}));
+  const valid=f.name.trim()&&f.schoolId.trim()&&f.grade;
+  const lbl={display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5,marginTop:'1rem'};
+  return(
+    <div className="su" style={{maxWidth:440,margin:'0 auto',padding:'1.5rem 1rem'}}>
+      <div style={{textAlign:'center',marginBottom:'1.75rem'}}>
+        <div style={{fontSize:46,marginBottom:'.5rem'}}>🎓</div>
+        <h2 style={{color:'white',fontSize:22,fontWeight:700}}>{existing?'Update School Info':'School Profile Setup'}</h2>
+        <p style={{color:'rgba(255,255,255,.4)',fontSize:13,marginTop:'.3rem'}}>{existing?'Keep your info up to date':'Set up your school profile to track assignments'}</p>
+      </div>
+      <label style={lbl}>Full Name</label>
+      <input className="inp" placeholder="Your full name" value={f.name} onChange={e=>set('name')(e.target.value)} style={{marginBottom:0}}/>
+      <label style={lbl}>School Email <span style={{color:'rgba(255,255,255,.3)',fontWeight:400}}>(optional)</span></label>
+      <input className="inp" type="email" placeholder="student@school.edu" value={f.email} onChange={e=>set('email')(e.target.value)} style={{marginBottom:0}}/>
+      <label style={lbl}>School ID <span style={{color:'rgba(255,255,255,.3)',fontWeight:400}}>(used to unlock app in emergencies)</span></label>
+      <input className="inp" placeholder="e.g. STU12345" value={f.schoolId} onChange={e=>set('schoolId')(e.target.value)} style={{marginBottom:0}}/>
+      <label style={lbl}>Grade</label>
+      <select className="inp" value={f.grade} onChange={e=>set('grade')(e.target.value)} style={{marginBottom:'1.75rem'}}>
+        <option value="">Select grade…</option>
+        {GRADES.map(g=><option key={g} value={g}>{g} Grade</option>)}
+      </select>
+      <button disabled={!valid} onClick={()=>valid&&onSave(f)} style={{width:'100%',padding:'1rem',borderRadius:14,fontSize:16,fontWeight:700,cursor:'pointer',background:valid?`linear-gradient(135deg,${ac},${ac}bb)`:'rgba(255,255,255,.08)',color:valid?'white':'rgba(255,255,255,.25)',boxShadow:valid?`0 6px 24px ${ac}44`:'none',transition:'all .3s'}}>
+        {existing?'Save Changes':'Set Up School Profile →'}
+      </button>
+    </div>
+  );
+}
+
+/* ─── Dashboard ──────────────────────────────────────────────────────── */
+function Dashboard({user,classes,assignments,setAssignments,onClasses,onAdd,onAlarm,ac,timeWindow,setTimeWindow,toast}){
+  const[tab,setTab]=useState('all');const[dir,setDir]=useState('l');
+  const TABS=[['all','All'],['missing','Missing'],['soon','Due Soon'],['done','Submitted']];
+  const chTab=t=>{if(t===tab)return;const ti=TABS.findIndex(x=>x[0]===t),ci=TABS.findIndex(x=>x[0]===tab);setDir(ti>ci?'l':'r');setTab(t);};
+  const now=new Date();
+  const filtered=assignments.filter(a=>{const d=daysUntil(a.dueDate);if(tab==='all')return d<=timeWindow||d<0||a.submitted;if(tab==='missing')return!a.submitted&&d<0;if(tab==='soon')return!a.submitted&&d>=0&&d<=timeWindow;if(tab==='done')return a.submitted;return true;});
+  const miss=assignments.filter(a=>!a.submitted&&daysUntil(a.dueDate)<0).length;
+  const urg=assignments.filter(a=>!a.submitted&&daysUntil(a.dueDate)>=0&&daysUntil(a.dueDate)<=3).length;
+  const done=assignments.filter(a=>a.submitted).length;
+  const pct=assignments.length?Math.round(done/assignments.length*100):0;
+  const badge=a=>{if(a.submitted)return{l:'Submitted',c:'#4ade80'};const d=daysUntil(a.dueDate);if(d<0)return{l:'Missing',c:'#ef4444'};if(d===0)return{l:'Due Today!',c:'#f97316'};if(d===1)return{l:'Due Tomorrow',c:'#fb923c'};if(d<=3)return{l:`${d}d left`,c:'#facc15'};return{l:`${d}d left`,c:'rgba(255,255,255,.4)'};};
+  const markDone=id=>{setAssignments(p=>p.map(x=>x.id===id?{...x,submitted:true}:x));toast('Marked as submitted ✓');};
+
+  return(
+    <div className="fi" style={{padding:'1rem',paddingBottom:'1.5rem'}}>
+      {/* Greeting */}
+      <div style={{marginBottom:'1.25rem'}}>
+        <h2 style={{color:'white',fontSize:20,fontWeight:700}}>Hey, {user.name.split(' ')[0]} 👋</h2>
+        <p style={{color:'rgba(255,255,255,.38)',fontSize:13,marginTop:3}}>{user.email||''}{user.email?' · ':''}{user.grade} Grade</p>
+      </div>
+
+      {/* Stats row */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'.6rem',marginBottom:'1rem'}}>
+        {[{l:'Missing',v:miss,c:'#ef4444',ic:'⚠'},{l:'Urgent',v:urg,c:'#facc15',ic:'⏰'},{l:'Done',v:done,c:'#4ade80',ic:'✓'}].map(s=>(
+          <div key={s.l} onClick={()=>chTab(s.l==='Done'?'done':s.l==='Missing'?'missing':'soon')} className="card-sm" style={{padding:'.85rem .6rem',textAlign:'center',cursor:'pointer',transition:'all .2s',border:`1px solid ${s.c}22`}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,.1)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,.06)'}>
+            <div style={{fontSize:24,fontWeight:800,color:s.c,lineHeight:1}}>{s.v}</div>
+            <div style={{fontSize:11,color:'rgba(255,255,255,.4)',marginTop:3,fontWeight:500}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Progress bar */}
+      {assignments.length>0&&(
+        <div className="card-sm" style={{padding:'.85rem',marginBottom:'1rem'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'.5rem'}}>
+            <span style={{color:'rgba(255,255,255,.6)',fontSize:13}}>Overall Progress</span>
+            <span style={{color:ac,fontWeight:700,fontSize:14}}>{pct}%</span>
+          </div>
+          <div style={{background:'rgba(255,255,255,.08)',borderRadius:20,height:8,overflow:'hidden'}}>
+            <div style={{width:`${pct}%`,height:'100%',background:`linear-gradient(90deg,${ac},${ac}bb)`,borderRadius:20,transition:'width .6s ease'}}/>
+          </div>
+        </div>
+      )}
+
+      {/* Time window */}
+      <div className="card-sm" style={{padding:'.85rem',marginBottom:'1rem',display:'flex',alignItems:'center',gap:'.75rem'}}>
+        <span style={{color:'rgba(255,255,255,.5)',fontSize:13,whiteSpace:'nowrap',minWidth:52}}>Window</span>
+        <input type="range" min={1} max={30} step={1} value={timeWindow} onChange={e=>setTimeWindow(+e.target.value)} style={{flex:1,accentColor:ac,cursor:'pointer'}}/>
+        <span style={{color:ac,fontWeight:700,fontSize:14,minWidth:58,textAlign:'right'}}>{timeWindow===30?'1 month':`${timeWindow} day${timeWindow>1?'s':''}`}</span>
+      </div>
+
+      {/* Filter tabs */}
+      <div style={{display:'flex',gap:'.35rem',marginBottom:'1rem'}}>
+        {TABS.map(([k,l])=>{
+          const cnt=k==='missing'?miss:k==='soon'?urg:k==='done'?done:assignments.length;
+          return(
+            <button key={k} onClick={()=>chTab(k)} style={{flex:1,padding:'.55rem .15rem',borderRadius:10,fontSize:12,fontWeight:700,cursor:'pointer',transition:'all .28s',background:tab===k?`linear-gradient(135deg,${ac}dd,${ac})`:'rgba(255,255,255,.07)',color:tab===k?'white':'rgba(255,255,255,.5)',position:'relative'}}>
+              {l}
+              {k!=='all'&&cnt>0&&<span style={{position:'absolute',top:-4,right:-2,width:16,height:16,borderRadius:'50%',background:k==='missing'?'#ef4444':k==='soon'?'#f59e0b':'#4ade80',fontSize:9,fontWeight:700,color:'white',display:'flex',alignItems:'center',justifyContent:'center'}}>{cnt}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* List */}
+      <div key={tab} className={dir==='l'?'sl':'sr'}>
+        {filtered.length===0?(
+          <div style={{textAlign:'center',padding:'3.5rem 1rem',color:'rgba(255,255,255,.25)'}}>
+            <div style={{fontSize:48,marginBottom:'.75rem'}}>{tab==='done'?'🏆':assignments.length===0?'📋':'📭'}</div>
+            <p style={{fontSize:15,fontWeight:500,color:'rgba(255,255,255,.4)'}}>{assignments.length===0&&tab==='all'?'No assignments yet':'Nothing here'}</p>
+            <p style={{fontSize:13,marginTop:'.4rem',color:'rgba(255,255,255,.25)'}}>
+              {tab==='missing'?'Great — no missing work!':tab==='soon'?'Nothing due in this window':tab==='done'?'Submit assignments to see them here':'Tap "+ Add Work" to add your first assignment'}
+            </p>
+          </div>
+        ):filtered.map((a,i)=>{
+          const b=badge(a);const cls=classes.find(c=>c.id===a.classId)||{name:'Unknown',color:'#888'};
+          return(
+            <div key={a.id} className="su" style={{animationDelay:`${i*.05}s`,background:'rgba(255,255,255,.06)',borderRadius:14,padding:'1rem',marginBottom:'.6rem',borderLeft:`3px solid ${cls.color}`,transition:'transform .18s,background .18s',cursor:'default'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,.1)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,.06)'}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:a.submitted?0:'.5rem'}}>
+                <div style={{flex:1,marginRight:8}}>
+                  <div style={{fontWeight:700,color:'white',fontSize:15,lineHeight:1.3}}>{a.title}</div>
+                  <div style={{fontSize:12,color:'rgba(255,255,255,.42)',marginTop:3,display:'flex',flexWrap:'wrap',gap:'4px 10px'}}>
+                    <span style={{display:'inline-flex',alignItems:'center',gap:3}}><span style={{width:8,height:8,borderRadius:'50%',background:cls.color,display:'inline-block'}}></span>{cls.name}</span>
+                    <span>{a.type}</span>
+                    <span>{a.points} pts</span>
+                    <span>Due {fmtDate(a.dueDate)}</span>
+                    {a.priority&&a.priority!=='Medium'&&<span style={{color:a.priority==='High'?'#f87171':'#94a3b8'}}>{a.priority}</span>}
+                  </div>
+                </div>
+                <span style={{background:`${b.c}1a`,color:b.c,fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:20,whiteSpace:'nowrap',flexShrink:0,border:`1px solid ${b.c}33`}}>{b.l}</span>
+              </div>
+              {!a.submitted&&(
+                <div style={{display:'flex',gap:'.45rem'}}>
+                  <button onClick={()=>markDone(a.id)} style={{flex:1,padding:'.42rem',borderRadius:9,background:`${ac}18`,color:ac,fontSize:13,fontWeight:600,cursor:'pointer',transition:'background .18s'}} onMouseOver={e=>e.currentTarget.style.background=`${ac}38`} onMouseOut={e=>e.currentTarget.style.background=`${ac}18`}>✓ Mark Submitted</button>
+                  {daysUntil(a.dueDate)<=3&&daysUntil(a.dueDate)>=0&&<button onClick={()=>onAlarm(a)} style={{padding:'.42rem .7rem',borderRadius:9,background:'rgba(239,68,68,.15)',color:'#f87171',fontSize:13,fontWeight:600,cursor:'pointer'}}>🔔</button>}
+                  <button onClick={()=>{setAssignments(p=>p.filter(x=>x.id!==a.id));toast('Assignment removed');}} style={{width:32,borderRadius:9,background:'rgba(255,255,255,.07)',color:'rgba(255,255,255,.35)',fontSize:13,cursor:'pointer',transition:'background .18s'}} onMouseOver={e=>e.currentTarget.style.background='rgba(239,68,68,.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,.07)'}>✕</button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Actions */}
+      <div style={{display:'flex',gap:'.7rem',marginTop:'1rem'}}>
+        <button onClick={onClasses} style={{flex:1,padding:'.85rem',borderRadius:14,background:'rgba(255,255,255,.08)',color:'white',fontWeight:600,cursor:'pointer',transition:'background .2s',border:'1px solid rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center',gap:'.5rem'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,.14)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,.08)'}>
+          <span>📚</span> Classes <span style={{background:`${ac}28`,color:ac,fontSize:12,padding:'1px 7px',borderRadius:10,fontWeight:700}}>{classes.length}</span>
+        </button>
+        <button onClick={onAdd} style={{flex:1,padding:'.85rem',borderRadius:14,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'white',fontWeight:700,cursor:'pointer',transition:'opacity .2s',boxShadow:`0 4px 20px ${ac}44`}} onMouseOver={e=>e.currentTarget.style.opacity='.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>+ Add Work</button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Classes View ───────────────────────────────────────────────────── */
+function ClassesView({classes,setClasses,assignments,onSelect,onBack,ac,toast}){
+  const[showAdd,setShowAdd]=useState(false);const[delId,setDelId]=useState(null);
+  const[f,setF]=useState({name:'',teacher:'',color:CLASS_COLORS[0]});
+  const set=k=>v=>setF(p=>({...p,[k]:v}));
+  const add=()=>{if(!f.name.trim()||!f.teacher.trim())return;setClasses(p=>[...p,{id:gid(),name:f.name.trim(),teacher:f.teacher.trim(),color:f.color}]);setF({name:'',teacher:'',color:CLASS_COLORS[0]});setShowAdd(false);toast('Class added');};
+  return(
+    <div className="sl" style={{padding:'1rem',paddingBottom:'1.5rem'}}>
+      <div style={{display:'flex',alignItems:'center',gap:'.75rem',marginBottom:'1.25rem'}}>
+        <button onClick={onBack} className="btn-ghost" style={{width:38,height:38,padding:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,borderRadius:11}}>←</button>
+        <h2 style={{color:'white',flex:1,fontSize:20,fontWeight:700}}>My Classes</h2>
+        <button onClick={()=>setShowAdd(true)} style={{padding:'.48rem .9rem',borderRadius:10,background:`${ac}22`,color:ac,fontWeight:700,fontSize:14,cursor:'pointer',transition:'background .2s'}} onMouseOver={e=>e.currentTarget.style.background=`${ac}44`} onMouseOut={e=>e.currentTarget.style.background=`${ac}22`}>+ Add Class</button>
+      </div>
+      {classes.length===0&&(
+        <div style={{textAlign:'center',padding:'3.5rem 1rem',color:'rgba(255,255,255,.3)'}}>
+          <div style={{fontSize:52,marginBottom:'.75rem'}}>📚</div>
+          <p style={{fontSize:16,fontWeight:500,color:'rgba(255,255,255,.45)'}}>No classes yet</p>
+          <p style={{fontSize:13,marginTop:'.4rem'}}>Tap "Add Class" to create your first class</p>
+        </div>
+      )}
+      {classes.map((c,i)=>{
+        const cnt=assignments.filter(a=>a.classId===c.id).length;
+        const pend=assignments.filter(a=>a.classId===c.id&&!a.submitted).length;
+        const miss=assignments.filter(a=>a.classId===c.id&&!a.submitted&&daysUntil(a.dueDate)<0).length;
+        return(
+          <div key={c.id} className="su" style={{animationDelay:`${i*.06}s`,background:'rgba(255,255,255,.06)',borderRadius:14,padding:'1rem',marginBottom:'.6rem',borderLeft:`4px solid ${c.color}`,display:'flex',alignItems:'center',gap:'.75rem',transition:'transform .18s,background .18s',cursor:'pointer',border:`1px solid rgba(255,255,255,.08)`,borderLeftColor:c.color,borderLeftWidth:4}} onClick={()=>onSelect(c)} onMouseOver={e=>{e.currentTarget.style.transform='translateX(3px)';e.currentTarget.style.background='rgba(255,255,255,.1)';}} onMouseOut={e=>{e.currentTarget.style.transform='translateX(0)';e.currentTarget.style.background='rgba(255,255,255,.06)';}}>
+            <div style={{width:42,height:42,borderRadius:12,background:`${c.color}22`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:18,fontWeight:700,color:c.color}}>{c.name.charAt(0)}</div>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:700,color:'white',fontSize:15}}>{c.name}</div>
+              <div style={{fontSize:12,color:'rgba(255,255,255,.42)',marginTop:2}}>👤 {c.teacher}</div>
+            </div>
+            <div style={{textAlign:'right',flexShrink:0}}>
+              {miss>0&&<div style={{background:'rgba(239,68,68,.2)',color:'#f87171',fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,marginBottom:3}}>{miss} missing</div>}
+              <div style={{color:'rgba(255,255,255,.4)',fontSize:12}}>{cnt} total · {pend} pending</div>
+            </div>
+            <button onClick={e=>{e.stopPropagation();setDelId(c.id);}} style={{width:30,height:30,borderRadius:8,background:'rgba(239,68,68,.12)',color:'#f87171',fontSize:12,cursor:'pointer',flexShrink:0,transition:'background .2s'}} onMouseOver={e=>{e.stopPropagation();e.currentTarget.style.background='rgba(239,68,68,.28)';}} onMouseOut={e=>{e.stopPropagation();e.currentTarget.style.background='rgba(239,68,68,.12)';}}>✕</button>
+          </div>
+        );
+      })}
+
+      {showAdd&&(
+        <Modal onClose={()=>setShowAdd(false)}>
+          <h3 style={{color:'white',marginBottom:'1.25rem',fontSize:18}}>Add New Class</h3>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5}}>Class Name</label>
+          <input className="inp" placeholder="e.g. Algebra II, AP English, Biology…" value={f.name} onChange={e=>set('name')(e.target.value)} style={{marginBottom:'1rem'}}/>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5}}>Teacher</label>
+          <input className="inp" placeholder="e.g. Mr. Smith, Ms. Rivera…" value={f.teacher} onChange={e=>set('teacher')(e.target.value)} style={{marginBottom:'1.25rem'}}/>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:'10px'}}>Class Color</label>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:'1.5rem'}}>
+            {CLASS_COLORS.map(col=>(
+              <button key={col} onClick={()=>set('color')(col)} style={{width:32,height:32,borderRadius:'50%',background:col,cursor:'pointer',border:`3px solid ${f.color===col?'white':'transparent'}`,boxShadow:f.color===col?`0 0 0 2px ${col}`:'none',transition:'all .2s'}}/>
+            ))}
+          </div>
+          <div style={{display:'flex',gap:'.75rem'}}>
+            <button className="btn-ghost" style={{flex:1}} onClick={()=>setShowAdd(false)}>Cancel</button>
+            <button disabled={!f.name.trim()||!f.teacher.trim()} onClick={add} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'white',fontWeight:700,cursor:'pointer',opacity:(!f.name.trim()||!f.teacher.trim())?.4:1,transition:'opacity .2s'}}>Add Class</button>
+          </div>
+        </Modal>
+      )}
+      {delId&&(
+        <Modal onClose={()=>setDelId(null)}>
+          <div style={{textAlign:'center',padding:'.5rem 0'}}>
+            <div style={{fontSize:44,marginBottom:'.75rem'}}>⚠️</div>
+            <h3 style={{color:'white',marginBottom:'.5rem',fontSize:18}}>Delete this class?</h3>
+            <p style={{color:'rgba(200,200,220,.55)',fontSize:14,marginBottom:'1.5rem',lineHeight:1.5}}>All assignments linked to this class will also be permanently removed.</p>
+            <div style={{display:'flex',gap:'.75rem'}}>
+              <button className="btn-ghost" style={{flex:1}} onClick={()=>setDelId(null)}>Cancel</button>
+              <button className="btn-danger" style={{flex:1}} onClick={()=>{setClasses(p=>p.filter(c=>c.id!==delId));setDelId(null);toast('Class deleted','warn');}}>Delete Class</button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+/* ─── Class Detail ───────────────────────────────────────────────────── */
+function ClassDetail({cls,assignments,setAssignments,onBack,onAddHere,ac,toast}){
+  const mine=assignments.filter(a=>a.classId===cls.id);
+  const[sort,setSort]=useState('date');
+  const sorted=[...mine].sort((a,b)=>sort==='date'?new Date(a.dueDate)-new Date(b.dueDate):sort==='type'?a.type.localeCompare(b.type):b.points-a.points);
+  const badge=a=>{if(a.submitted)return{l:'Done',c:'#4ade80'};const d=daysUntil(a.dueDate);if(d<0)return{l:'Missing',c:'#ef4444'};if(d===0)return{l:'Today!',c:'#f97316'};if(d<=3)return{l:`${d}d`,c:'#facc15'};return{l:`${d}d left`,c:'rgba(255,255,255,.42)'};};
+  const totalPts=mine.reduce((s,a)=>s+a.points,0);
+  const earnedPts=mine.filter(a=>a.submitted).reduce((s,a)=>s+a.points,0);
+  return(
+    <div className="sl" style={{padding:'1rem',paddingBottom:'1.5rem'}}>
+      <div style={{display:'flex',alignItems:'center',gap:'.75rem',marginBottom:'1.25rem'}}>
+        <button onClick={onBack} className="btn-ghost" style={{width:38,height:38,padding:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,borderRadius:11}}>←</button>
+        <div style={{flex:1}}>
+          <h2 style={{color:'white',fontSize:19,lineHeight:1.1,fontWeight:700}}>{cls.name}</h2>
+          <p style={{color:'rgba(255,255,255,.42)',fontSize:13,marginTop:1}}>👤 {cls.teacher}</p>
+        </div>
+        <div style={{width:14,height:14,borderRadius:'50%',background:cls.color,flexShrink:0,boxShadow:`0 0 8px ${cls.color}88`}}/>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'.5rem',marginBottom:'1rem'}}>
+        {[{l:'Total',v:mine.length,c:'#818cf8'},{l:'Pending',v:mine.filter(a=>!a.submitted).length,c:'#facc15'},{l:'Missing',v:mine.filter(a=>!a.submitted&&daysUntil(a.dueDate)<0).length,c:'#ef4444'},{l:'Done',v:mine.filter(a=>a.submitted).length,c:'#4ade80'}].map(s=>(
+          <div key={s.l} className="card-sm" style={{padding:'.65rem .4rem',textAlign:'center',border:`1px solid ${s.c}22`}}>
+            <div style={{fontSize:20,fontWeight:800,color:s.c}}>{s.v}</div>
+            <div style={{fontSize:10,color:'rgba(255,255,255,.4)',marginTop:1}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+      {totalPts>0&&(
+        <div className="card-sm" style={{padding:'.85rem',marginBottom:'1rem'}}>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:'.4rem'}}>
+            <span style={{color:'rgba(255,255,255,.55)',fontSize:12}}>Points Submitted</span>
+            <span style={{color:ac,fontWeight:700,fontSize:13}}>{earnedPts}/{totalPts} pts</span>
+          </div>
+          <div style={{background:'rgba(255,255,255,.08)',borderRadius:10,height:6,overflow:'hidden'}}>
+            <div style={{width:`${Math.round(earnedPts/totalPts*100)}%`,height:'100%',background:`linear-gradient(90deg,${cls.color},${cls.color}aa)`,borderRadius:10,transition:'width .5s'}}/>
+          </div>
+        </div>
+      )}
+      {/* Sort */}
+      <div style={{display:'flex',gap:'.35rem',marginBottom:'1rem'}}>
+        <span style={{color:'rgba(255,255,255,.4)',fontSize:12,alignSelf:'center',marginRight:4}}>Sort:</span>
+        {[['date','Date'],['type','Type'],['points','Points']].map(([k,l])=>(
+          <button key={k} onClick={()=>setSort(k)} style={{padding:'.35rem .7rem',borderRadius:8,fontSize:12,fontWeight:600,cursor:'pointer',background:sort===k?`${ac}28`:'rgba(255,255,255,.07)',color:sort===k?ac:'rgba(255,255,255,.5)',border:`1px solid ${sort===k?ac+'44':'transparent'}`,transition:'all .2s'}}>{l}</button>
+        ))}
+      </div>
+      {mine.length===0&&<div style={{textAlign:'center',padding:'2.5rem 1rem',color:'rgba(255,255,255,.3)'}}><div style={{fontSize:40,marginBottom:'.5rem'}}>📝</div><p>No assignments yet</p></div>}
+      {sorted.map((a,i)=>{const b=badge(a);return(
+        <div key={a.id} className="su" style={{animationDelay:`${i*.05}s`,background:'rgba(255,255,255,.06)',borderRadius:12,padding:'.9rem',marginBottom:'.55rem',borderLeft:`3px solid ${cls.color}`,transition:'background .18s'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,.1)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,.06)'}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
+            <div style={{flex:1}}>
+              <div style={{color:'white',fontWeight:600,fontSize:14}}>{a.title}</div>
+              <div style={{color:'rgba(255,255,255,.4)',fontSize:12,marginTop:2}}>{a.type} · {a.points} pts · {fmtDate(a.dueDate)}</div>
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
+              <span style={{background:`${b.c}1a`,color:b.c,fontSize:11,fontWeight:700,padding:'3px 9px',borderRadius:20,border:`1px solid ${b.c}33`}}>{b.l}</span>
+              {!a.submitted&&<button onClick={()=>{setAssignments(p=>p.map(x=>x.id===a.id?{...x,submitted:true}:x));toast('Marked submitted ✓');}} style={{width:28,height:28,borderRadius:8,background:`${ac}22`,color:ac,fontSize:13,cursor:'pointer',transition:'background .18s'}} onMouseOver={e=>e.currentTarget.style.background=`${ac}44`} onMouseOut={e=>e.currentTarget.style.background=`${ac}22`}>✓</button>}
+              <button onClick={()=>{setAssignments(p=>p.filter(x=>x.id!==a.id));toast('Removed');}} style={{width:28,height:28,borderRadius:8,background:'rgba(239,68,68,.12)',color:'#f87171',fontSize:12,cursor:'pointer',transition:'background .18s'}} onMouseOver={e=>e.currentTarget.style.background='rgba(239,68,68,.28)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239,68,68,.12)'}>✕</button>
+            </div>
+          </div>
+        </div>
+      );})}
+      <button onClick={onAddHere} style={{width:'100%',marginTop:'.75rem',padding:'.9rem',borderRadius:14,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'white',fontWeight:700,fontSize:15,cursor:'pointer',boxShadow:`0 4px 20px ${ac}44`,transition:'opacity .2s'}} onMouseOver={e=>e.currentTarget.style.opacity='.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>+ Add Assignment to {cls.name}</button>
+    </div>
+  );
+}
+
+/* ─── Add Assignment ──────────────────────────────────────────────────── */
+function AddAssignment({classes,preClass,onAdd,onBack,ac,toast}){
+  const[f,setF]=useState({classId:preClass?.id||'',title:'',type:'Homework',points:'10',dueDate:todayPlus(1),priority:'Medium',notes:''});
+  const set=k=>v=>setF(p=>({...p,[k]:v}));
+  const valid=f.classId&&f.title.trim()&&f.dueDate&&Number(f.points)>0;
+  const lbl={display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5,marginTop:'1rem'};
+  return(
+    <div className="su" style={{padding:'1rem',paddingBottom:'1.5rem',maxWidth:520,margin:'0 auto'}}>
+      <div style={{display:'flex',alignItems:'center',gap:'.75rem',marginBottom:'1.5rem'}}>
+        <button onClick={onBack} className="btn-ghost" style={{width:38,height:38,padding:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,borderRadius:11}}>←</button>
+        <h2 style={{color:'white',fontSize:20,fontWeight:700}}>Add Assignment</h2>
+      </div>
+      {classes.length===0?(
+        <div style={{textAlign:'center',padding:'3rem 1rem',color:'rgba(255,255,255,.4)'}}>
+          <div style={{fontSize:48,marginBottom:'.75rem'}}>📚</div>
+          <p style={{fontSize:16,marginBottom:'.5rem',fontWeight:500,color:'rgba(255,255,255,.55)'}}>No classes yet</p>
+          <p style={{fontSize:13,marginBottom:'1.25rem'}}>You need to add a class before adding assignments.</p>
+          <button onClick={onBack} style={{padding:'.7rem 1.5rem',borderRadius:12,background:`${ac}22`,color:ac,fontWeight:700,cursor:'pointer'}}>← Go Add a Class</button>
+        </div>
+      ):(
+        <>
+          <label style={{...lbl,marginTop:0}}>Class *</label>
+          <select className="inp" value={f.classId} onChange={e=>set('classId')(e.target.value)}>
+            <option value="">Select a class…</option>
+            {classes.map(c=><option key={c.id} value={c.id}>{c.name} — {c.teacher}</option>)}
+          </select>
+          <label style={lbl}>Assignment Title *</label>
+          <input className="inp" placeholder="e.g. Chapter 5 Homework, Midterm Essay…" value={f.title} onChange={e=>set('title')(e.target.value)}/>
+          <label style={lbl}>Type</label>
+          <div style={{display:'flex',gap:'.35rem',flexWrap:'wrap',marginBottom:0}}>
+            {ASGN_TYPES.map(t=><button key={t} onClick={()=>set('type')(t)} style={{padding:'.4rem .8rem',borderRadius:20,fontSize:13,fontWeight:600,cursor:'pointer',transition:'all .2s',background:f.type===t?`${ac}28`:'rgba(255,255,255,.07)',color:f.type===t?ac:'rgba(255,255,255,.5)',border:`1.5px solid ${f.type===t?ac+'55':'transparent'}`}}>{t}</button>)}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.65rem'}}>
+            <div><label style={lbl}>Points *</label><input className="inp" type="number" min={1} placeholder="10" value={f.points} onChange={e=>set('points')(e.target.value)}/></div>
+            <div><label style={lbl}>Due Date *</label><input className="inp" type="date" value={f.dueDate} onChange={e=>set('dueDate')(e.target.value)}/></div>
+          </div>
+          <label style={lbl}>Priority</label>
+          <div style={{display:'flex',gap:'.35rem',marginBottom:0}}>
+            {PRIORITY.map(p=><button key={p} onClick={()=>set('priority')(p)} style={{padding:'.4rem .9rem',borderRadius:20,fontSize:13,fontWeight:600,cursor:'pointer',transition:'all .2s',background:f.priority===p?`${p==='High'?'rgba(239,68,68,.25)':p==='Low'?'rgba(148,163,184,.2)':'rgba(251,191,36,.2)'}`:'rgba(255,255,255,.07)',color:f.priority===p?(p==='High'?'#f87171':p==='Low'?'#94a3b8':'#fbbf24'):'rgba(255,255,255,.5)'}}>{p}</button>)}
+          </div>
+          <label style={lbl}>Notes <span style={{color:'rgba(255,255,255,.3)',fontWeight:400}}>(optional)</span></label>
+          <textarea className="inp" placeholder="Any notes about this assignment…" value={f.notes} onChange={e=>set('notes')(e.target.value)} style={{resize:'none',height:72,marginBottom:'1.25rem'}}/>
+          <button disabled={!valid} onClick={()=>valid&&(onAdd({id:gid(),classId:f.classId,title:f.title.trim(),type:f.type,points:Number(f.points),dueDate:f.dueDate,priority:f.priority,notes:f.notes,submitted:false,createdAt:new Date().toISOString()}),toast('Assignment added'))} style={{width:'100%',padding:'1rem',borderRadius:14,fontSize:16,fontWeight:700,cursor:'pointer',background:valid?`linear-gradient(135deg,${ac},${ac}bb)`:'rgba(255,255,255,.08)',color:valid?'white':'rgba(255,255,255,.25)',boxShadow:valid?`0 4px 22px ${ac}44`:'none',transition:'all .3s'}}>
+            Add Assignment
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ─── Alarm Overlay ───────────────────────────────────────────────────── */
+function AlarmOverlay({asgn,cls,onLater,onNow,onShutdown}){
+  const d=daysUntil(asgn.dueDate);
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:800,background:'rgba(0,0,0,.92)',display:'flex',alignItems:'center',justifyContent:'center',padding:'1.25rem',animation:'fadeIn .28s ease both'}}>
+      <div style={{width:'100%',maxWidth:390,background:'linear-gradient(145deg,#1e0808,#2d1010)',borderRadius:24,padding:'2rem',border:'2px solid #ef4444',boxShadow:'0 0 80px rgba(239,68,68,.3)',animation:'alarmPulse 1.2s ease-in-out infinite',textAlign:'center'}}>
+        <div style={{fontSize:54,marginBottom:'.85rem'}}>🚨</div>
+        <h2 style={{color:'#f87171',fontSize:22,marginBottom:'.5rem',fontWeight:700}}>Due in {d} Day{d!==1?'s':''}!</h2>
+        <div style={{background:'rgba(239,68,68,.12)',borderRadius:14,padding:'1rem',marginBottom:'1.5rem',border:'1px solid rgba(239,68,68,.25)'}}>
+          <div style={{color:'white',fontWeight:700,fontSize:16,marginBottom:4}}>{asgn.title}</div>
+          <div style={{color:'rgba(255,180,180,.65)',fontSize:13,display:'flex',justifyContent:'center',gap:12,flexWrap:'wrap'}}>
+            <span>{cls?.name||'Unknown class'}</span>
+            <span>·</span><span>{asgn.type}</span>
+            <span>·</span><span>{asgn.points} pts</span>
+          </div>
+          <div style={{color:'#f87171',fontSize:13,marginTop:6,fontWeight:500}}>Due: {fmtDate(asgn.dueDate)}</div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:'.65rem'}}>
+          <button onClick={onNow} style={{padding:'1rem',borderRadius:14,background:'linear-gradient(135deg,rgba(239,68,68,.8),#ef4444)',color:'white',fontWeight:700,fontSize:15,cursor:'pointer',transition:'opacity .2s'}} onMouseOver={e=>e.currentTarget.style.opacity='.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>⚡ Do It Now — Lock App Until Done</button>
+          <button onClick={onLater} style={{padding:'.85rem',borderRadius:14,background:'rgba(255,255,255,.1)',color:'white',fontWeight:600,fontSize:14,cursor:'pointer',border:'1px solid rgba(255,255,255,.12)',transition:'background .2s'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,.18)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,.1)'}>⏰ Remind Me Later</button>
+          <button onClick={onShutdown} style={{padding:'.7rem',borderRadius:14,background:'transparent',color:'rgba(255,255,255,.32)',fontWeight:600,fontSize:12,cursor:'pointer'}}>🔒 Dead Shutdown (enter password)</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Lock Screen ─────────────────────────────────────────────────────── */
+function LockScreen({asgn,cls,onUnlock,onOverride,ac,toast}){
+  const[showOv,setShowOv]=useState(false);
+  return(
+    <div style={{position:'fixed',inset:0,zIndex:700,background:'rgba(0,0,0,.97)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'1.5rem',animation:'fadeIn .28s ease both'}}>
+      <div style={{textAlign:'center',maxWidth:360,width:'100%'}}>
+        <div style={{fontSize:64,marginBottom:'1rem'}}>🔒</div>
+        <h2 style={{color:'white',fontSize:22,fontWeight:700,marginBottom:'.5rem'}}>App Locked</h2>
+        <p style={{color:'rgba(255,255,255,.4)',fontSize:14,marginBottom:'1.5rem',lineHeight:1.5}}>You chose to do this assignment first.<br/>Submit it to unlock the app.</p>
+        <div style={{background:'rgba(255,255,255,.07)',borderRadius:18,padding:'1.25rem',marginBottom:'1.75rem',border:'1px solid rgba(255,255,255,.12)'}}>
+          <div style={{color:'white',fontWeight:700,fontSize:16,marginBottom:4}}>{asgn.title}</div>
+          <div style={{color:'rgba(255,255,255,.42)',fontSize:13}}>{cls?.name||'Unknown'} · {asgn.type} · Due {fmtDate(asgn.dueDate)}</div>
+        </div>
+        <button onClick={()=>{onUnlock();toast('Assignment submitted — app unlocked!');}} style={{width:'100%',padding:'1.1rem',borderRadius:14,background:`linear-gradient(135deg,${ac},${ac}bb)`,color:'white',fontWeight:700,fontSize:16,cursor:'pointer',marginBottom:'1rem',boxShadow:`0 6px 28px ${ac}44`,transition:'opacity .2s'}} onMouseOver={e=>e.currentTarget.style.opacity='.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>✅ I Submitted It — Unlock App</button>
+        <button onClick={()=>setShowOv(true)} style={{color:'rgba(255,255,255,.25)',fontSize:13,padding:'.5rem',cursor:'pointer',background:'transparent'}}>Override with school ID</button>
+      </div>
+      {showOv&&<PwModal title="Override Lock" hint="Enter your school ID to force-unlock" ac={ac} onConfirm={pw=>{if(onOverride(pw)){toast('App unlocked via override');return true;}return false;}} onCancel={()=>setShowOv(false)}/>}
+    </div>
+  );
+}
+
+/* ─── Home Tab ────────────────────────────────────────────────────────── */
+function HomeTab({tasks,setTasks,projects,setProjects,goals,setGoals,parentPw,setParentPw,ac,toast}){
+  const[sec,setSec]=useState('tasks');const[modal,setModal]=useState(null);const[pwQ,setPwQ]=useState(null);
+  const[ft,setFt]=useState({title:'',dueDate:todayPlus(7),desc:''});
+  const askPw=action=>setPwQ({action});
+  const checkPw=pw=>{if(pw===parentPw){pwQ.action();setPwQ(null);return true;}return false;};
+  const S=s=>({flex:1,padding:'.6rem .15rem',borderRadius:10,fontSize:12,fontWeight:700,cursor:'pointer',transition:'all .28s',background:sec===s?`linear-gradient(135deg,${ac}dd,${ac})`:'rgba(255,255,255,.07)',color:sec===s?'white':'rgba(255,255,255,.5)'});
+
+  const pendT=tasks.filter(t=>!t.completed).length;
+  const pendP=projects.filter(p=>!p.completed).length;
+
+  return(
+    <div style={{padding:'1rem',paddingBottom:'1.5rem'}} className="fi">
+      <div style={{display:'flex',gap:'.35rem',marginBottom:'1.25rem'}}>
+        {[['tasks','Tasks',pendT],['projects','Projects',pendP],['goals','Goals',0],['settings','⚙️',0]].map(([k,l,cnt])=>(
+          <button key={k} style={{...S(k),position:'relative'}} onClick={()=>setSec(k)}>
+            {l}
+            {cnt>0&&<span style={{position:'absolute',top:-4,right:-2,width:16,height:16,borderRadius:'50%',background:ac,fontSize:9,fontWeight:700,color:'white',display:'flex',alignItems:'center',justifyContent:'center'}}>{cnt}</span>}
+          </button>
+        ))}
+      </div>
+      <div key={sec} className="sl">
+
+        {/* TASKS */}
+        {sec==='tasks'&&(
+          <>
+            {tasks.length===0&&<div style={{textAlign:'center',padding:'3rem 1rem',color:'rgba(255,255,255,.3)'}}><div style={{fontSize:48,marginBottom:'.6rem'}}>🧹</div><p style={{fontSize:15,color:'rgba(255,255,255,.4)',fontWeight:500}}>No tasks yet</p><p style={{fontSize:13,marginTop:.4+'rem'}}>Add household tasks below</p></div>}
+            {tasks.map((t,i)=>(
+              <div key={t.id} className="su" style={{animationDelay:`${i*.05}s`,background:'rgba(255,255,255,.06)',borderRadius:14,padding:'.9rem 1rem',marginBottom:'.55rem',borderLeft:`3px solid ${t.completed?'#4ade80':'#facc15'}`,display:'flex',alignItems:'center',gap:'.75rem',transition:'all .18s',cursor:'default'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,.1)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,.06)'}>
+                <div style={{flex:1}}>
+                  <div style={{color:t.completed?'rgba(255,255,255,.4)':'white',fontWeight:600,fontSize:15,textDecoration:t.completed?'line-through':'none'}}>{t.title}</div>
+                  <div style={{color:'rgba(255,255,255,.35)',fontSize:12,marginTop:2}}>{t.completed?'✅ Completed — parent confirmed':'⏳ Pending parent approval'}</div>
+                </div>
+                {!t.completed&&<button onClick={()=>askPw(()=>{setTasks(p=>p.map(x=>x.id===t.id?{...x,completed:true,completedAt:new Date().toISOString()}:x));toast('Task marked complete ✓');})} style={{padding:'.42rem .8rem',borderRadius:9,background:`${ac}18`,color:ac,fontSize:13,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap',transition:'background .18s'}} onMouseOver={e=>e.currentTarget.style.background=`${ac}38`} onMouseOut={e=>e.currentTarget.style.background=`${ac}18`}>✓ Done</button>}
+                <button onClick={()=>askPw(()=>{setTasks(p=>p.filter(x=>x.id!==t.id));toast('Task removed','warn');})} style={{width:28,height:28,borderRadius:8,background:'rgba(239,68,68,.12)',color:'#f87171',fontSize:12,cursor:'pointer',flexShrink:0,transition:'background .18s'}} onMouseOver={e=>e.currentTarget.style.background='rgba(239,68,68,.28)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239,68,68,.12)'}>✕</button>
+              </div>
+            ))}
+            <button onClick={()=>{setFt({title:'',dueDate:'',desc:''});setModal('task');}} style={{width:'100%',padding:'.9rem',borderRadius:14,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'white',fontWeight:700,marginTop:'.5rem',cursor:'pointer',boxShadow:`0 4px 18px ${ac}44`}}>+ Add Task</button>
+          </>
+        )}
+
+        {/* PROJECTS */}
+        {sec==='projects'&&(
+          <>
+            {projects.length===0&&<div style={{textAlign:'center',padding:'3rem 1rem',color:'rgba(255,255,255,.3)'}}><div style={{fontSize:48,marginBottom:'.6rem'}}>📋</div><p style={{fontSize:15,color:'rgba(255,255,255,.4)',fontWeight:500}}>No projects yet</p><p style={{fontSize:13,marginTop:.4+'rem'}}>Parents can add projects for kids</p></div>}
+            {projects.map((p,i)=>{
+              const d=daysUntil(p.dueDate);const bc=p.completed?'#4ade80':d<0?'#ef4444':d<=3?'#facc15':'#818cf8';
+              return(
+                <div key={p.id} className="su" style={{animationDelay:`${i*.05}s`,background:'rgba(255,255,255,.06)',borderRadius:14,padding:'1rem',marginBottom:'.6rem',borderLeft:`3px solid ${bc}`,transition:'all .18s'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,.1)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,.06)'}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:p.completed?0:'.5rem'}}>
+                    <div style={{flex:1,marginRight:8}}>
+                      <div style={{color:p.completed?'rgba(255,255,255,.4)':'white',fontWeight:600,fontSize:15,textDecoration:p.completed?'line-through':'none',lineHeight:1.3}}>{p.title}</div>
+                      <div style={{color:'rgba(255,255,255,.4)',fontSize:12,marginTop:2}}>Due: {fmtDate(p.dueDate)}{!p.completed?` · ${d<0?'Overdue':d===0?'Today!':d+' days left'}`:''}  </div>
+                      {p.desc&&<div style={{color:'rgba(255,255,255,.3)',fontSize:12,marginTop:3,fontStyle:'italic'}}>{p.desc}</div>}
+                    </div>
+                    <span style={{background:`${bc}1a`,color:bc,fontSize:11,fontWeight:700,padding:'3px 9px',borderRadius:20,border:`1px solid ${bc}33`,flexShrink:0}}>{p.completed?'Done':d<0?'Overdue':'Active'}</span>
+                  </div>
+                  {!p.completed&&(
+                    <div style={{display:'flex',gap:'.45rem'}}>
+                      <button onClick={()=>askPw(()=>{setProjects(prev=>prev.map(x=>x.id===p.id?{...x,completed:true,completedAt:new Date().toISOString()}:x));toast('Project completed ✓');})} style={{flex:1,padding:'.42rem',borderRadius:9,background:`${ac}18`,color:ac,fontSize:13,fontWeight:600,cursor:'pointer',transition:'background .18s'}} onMouseOver={e=>e.currentTarget.style.background=`${ac}38`} onMouseOut={e=>e.currentTarget.style.background=`${ac}18`}>✓ Mark Complete</button>
+                      <button onClick={()=>askPw(()=>{setProjects(prev=>prev.filter(x=>x.id!==p.id));toast('Project removed','warn');})} style={{width:30,borderRadius:9,background:'rgba(239,68,68,.12)',color:'#f87171',fontSize:12,cursor:'pointer',transition:'background .18s'}} onMouseOver={e=>e.currentTarget.style.background='rgba(239,68,68,.28)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239,68,68,.12)'}>✕</button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            <button onClick={()=>{setFt({title:'',dueDate:todayPlus(7),desc:''});setModal('project');}} style={{width:'100%',padding:'.9rem',borderRadius:14,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'white',fontWeight:700,marginTop:'.5rem',cursor:'pointer',boxShadow:`0 4px 18px ${ac}44`}}>+ Add Project</button>
+          </>
+        )}
+
+        {/* GOALS */}
+        {sec==='goals'&&(
+          <>
+            {goals.length===0&&<div style={{textAlign:'center',padding:'3rem 1rem',color:'rgba(255,255,255,.3)'}}><div style={{fontSize:48,marginBottom:'.6rem'}}>🎯</div><p style={{fontSize:15,color:'rgba(255,255,255,.4)',fontWeight:500}}>No goals yet</p><p style={{fontSize:13,marginTop:.4+'rem'}}>Set personal goals and track progress</p></div>}
+            {goals.map((g,i)=>(
+              <div key={g.id} className="su" style={{animationDelay:`${i*.05}s`,background:'rgba(255,255,255,.06)',borderRadius:14,padding:'1rem',marginBottom:'.65rem',borderLeft:`3px solid ${g.progress>=100?'#4ade80':'#e879f9'}`}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'.8rem'}}>
+                  <div style={{flex:1}}>
+                    <div style={{color:'white',fontWeight:600,fontSize:15,lineHeight:1.3}}>{g.title}</div>
+                    <div style={{color:'rgba(255,255,255,.38)',fontSize:12,marginTop:2}}>Target: {fmtDate(g.dueDate)}</div>
+                    {g.desc&&<div style={{color:'rgba(255,255,255,.3)',fontSize:12,marginTop:3,fontStyle:'italic'}}>{g.desc}</div>}
+                  </div>
+                  <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
+                    <span style={{background:'rgba(232,121,249,.18)',color:'#e879f9',fontSize:13,fontWeight:700,padding:'4px 11px',borderRadius:20,border:'1px solid rgba(232,121,249,.3)'}}>{g.progress}%</span>
+                    <button onClick={()=>askPw(()=>{setGoals(p=>p.filter(x=>x.id!==g.id));toast('Goal removed','warn');})} style={{width:28,height:28,borderRadius:8,background:'rgba(239,68,68,.12)',color:'#f87171',fontSize:12,cursor:'pointer',transition:'background .18s'}} onMouseOver={e=>e.currentTarget.style.background='rgba(239,68,68,.28)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239,68,68,.12)'}>✕</button>
+                  </div>
+                </div>
+                <div style={{background:'rgba(255,255,255,.08)',borderRadius:20,height:8,overflow:'hidden',marginBottom:'.5rem'}}>
+                  <div style={{width:`${g.progress}%`,height:'100%',background:`linear-gradient(90deg,${ac},#e879f9)`,borderRadius:20,transition:'width .5s ease'}}/>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:'.75rem'}}>
+                  <input type="range" min={0} max={100} step={5} value={g.progress} onChange={e=>setGoals(p=>p.map(x=>x.id===g.id?{...x,progress:+e.target.value}:x))} style={{flex:1,accentColor:ac,cursor:'pointer'}}/>
+                  {g.progress>=100&&<span style={{color:'#4ade80',fontSize:12,fontWeight:700,whiteSpace:'nowrap'}}>🎉 Done!</span>}
+                </div>
+              </div>
+            ))}
+            <button onClick={()=>{setFt({title:'',dueDate:todayPlus(30),desc:''});setModal('goal');}} style={{width:'100%',padding:'.9rem',borderRadius:14,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'white',fontWeight:700,marginTop:'.5rem',cursor:'pointer',boxShadow:`0 4px 18px ${ac}44`}}>+ Add Goal</button>
+          </>
+        )}
+
+        {/* SETTINGS */}
+        {sec==='settings'&&(
+          <div className="sc">
+            <div className="card-sm" style={{padding:'1.25rem',marginBottom:'1rem'}}>
+              <div style={{display:'flex',alignItems:'center',gap:'.75rem',marginBottom:'.75rem'}}>
+                <div style={{width:36,height:36,borderRadius:10,background:`${ac}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>🔐</div>
+                <div>
+                  <h3 style={{color:'white',fontSize:15,fontWeight:700}}>Parental Controls</h3>
+                  <p style={{color:'rgba(255,255,255,.4)',fontSize:12}}>Default password: <span style={{color:ac,fontWeight:700}}>parent123</span></p>
+                </div>
+              </div>
+              <p style={{color:'rgba(255,255,255,.4)',fontSize:13,marginBottom:'1rem',lineHeight:1.5}}>Parent password required to add, complete, or remove tasks, projects, and goals.</p>
+              <button onClick={()=>setModal('changePw')} style={{width:'100%',padding:'.85rem',borderRadius:12,background:`${ac}18`,color:ac,fontWeight:700,cursor:'pointer',transition:'background .2s',border:`1px solid ${ac}33`}} onMouseOver={e=>e.currentTarget.style.background=`${ac}38`} onMouseOut={e=>e.currentTarget.style.background=`${ac}18`}>Change Parent Password</button>
+            </div>
+            <div className="card-sm" style={{padding:'1.25rem'}}>
+              <h3 style={{color:'white',fontSize:15,fontWeight:700,marginBottom:'1rem'}}>📊 Home Summary</h3>
+              {[['Tasks',tasks.filter(t=>!t.completed).length,tasks.length],['Projects',projects.filter(p=>!p.completed).length,projects.length],['Goals',goals.filter(g=>g.progress<100).length,goals.length]].map(([k,pend,total])=>(
+                <div key={k} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'.6rem 0',borderBottom:'1px solid rgba(255,255,255,.05)'}}>
+                  <span style={{color:'rgba(255,255,255,.55)',fontSize:14}}>{k}</span>
+                  <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                    {pend>0&&<span style={{background:`${ac}22`,color:ac,fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:10}}>{pend} pending</span>}
+                    <span style={{color:'rgba(255,255,255,.4)',fontSize:13}}>{total} total</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+      {modal==='task'&&(
+        <Modal onClose={()=>setModal(null)}>
+          <h3 style={{color:'white',marginBottom:'1.25rem',fontSize:18}}>Add Task</h3>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5}}>Task Description *</label>
+          <input className="inp" placeholder="e.g. Clean your room, Do the dishes…" value={ft.title} onChange={e=>setFt(p=>({...p,title:e.target.value}))} style={{marginBottom:'1.25rem'}} autoFocus/>
+          <div style={{display:'flex',gap:'.75rem'}}>
+            <button className="btn-ghost" style={{flex:1}} onClick={()=>setModal(null)}>Cancel</button>
+            <button disabled={!ft.title.trim()} onClick={()=>ft.title.trim()&&askPw(()=>{setTasks(p=>[...p,{id:gid(),title:ft.title.trim(),completed:false,createdAt:new Date().toISOString()}]);setModal(null);toast('Task added');})} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'white',fontWeight:700,cursor:'pointer',opacity:ft.title.trim()?1:.4,transition:'opacity .2s'}}>Add Task</button>
+          </div>
+        </Modal>
+      )}
+      {modal==='project'&&(
+        <Modal onClose={()=>setModal(null)}>
+          <h3 style={{color:'white',marginBottom:'1.25rem',fontSize:18}}>Add Project</h3>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5}}>Project Title *</label>
+          <input className="inp" placeholder="e.g. Create slides about travel destinations…" value={ft.title} onChange={e=>setFt(p=>({...p,title:e.target.value}))} autoFocus/>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5,marginTop:'1rem'}}>Description <span style={{color:'rgba(255,255,255,.3)',fontWeight:400}}>(optional)</span></label>
+          <textarea className="inp" placeholder="Details about this project…" value={ft.desc} onChange={e=>setFt(p=>({...p,desc:e.target.value}))} style={{resize:'none',height:64}}/>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5,marginTop:'1rem'}}>Due Date *</label>
+          <input className="inp" type="date" value={ft.dueDate} onChange={e=>setFt(p=>({...p,dueDate:e.target.value}))} style={{marginBottom:'1.25rem'}}/>
+          <div style={{display:'flex',gap:'.75rem'}}>
+            <button className="btn-ghost" style={{flex:1}} onClick={()=>setModal(null)}>Cancel</button>
+            <button disabled={!ft.title.trim()||!ft.dueDate} onClick={()=>(ft.title.trim()&&ft.dueDate)&&askPw(()=>{setProjects(p=>[...p,{id:gid(),title:ft.title.trim(),desc:ft.desc,dueDate:ft.dueDate,completed:false,createdAt:new Date().toISOString()}]);setModal(null);toast('Project added');})} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'white',fontWeight:700,cursor:'pointer',opacity:(ft.title.trim()&&ft.dueDate)?1:.4,transition:'opacity .2s'}}>Add Project</button>
+          </div>
+        </Modal>
+      )}
+      {modal==='goal'&&(
+        <Modal onClose={()=>setModal(null)}>
+          <h3 style={{color:'white',marginBottom:'1.25rem',fontSize:18}}>Add Goal</h3>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5}}>Goal *</label>
+          <input className="inp" placeholder="e.g. Read 5 books this month…" value={ft.title} onChange={e=>setFt(p=>({...p,title:e.target.value}))} autoFocus/>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5,marginTop:'1rem'}}>Notes <span style={{color:'rgba(255,255,255,.3)',fontWeight:400}}>(optional)</span></label>
+          <textarea className="inp" placeholder="Details or milestones…" value={ft.desc} onChange={e=>setFt(p=>({...p,desc:e.target.value}))} style={{resize:'none',height:60}}/>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5,marginTop:'1rem'}}>Target Date *</label>
+          <input className="inp" type="date" value={ft.dueDate} onChange={e=>setFt(p=>({...p,dueDate:e.target.value}))} style={{marginBottom:'1.25rem'}}/>
+          <div style={{display:'flex',gap:'.75rem'}}>
+            <button className="btn-ghost" style={{flex:1}} onClick={()=>setModal(null)}>Cancel</button>
+            <button disabled={!ft.title.trim()||!ft.dueDate} onClick={()=>(ft.title.trim()&&ft.dueDate)&&askPw(()=>{setGoals(p=>[...p,{id:gid(),title:ft.title.trim(),desc:ft.desc,dueDate:ft.dueDate,progress:0,createdAt:new Date().toISOString()}]);setModal(null);toast('Goal added');})} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'white',fontWeight:700,cursor:'pointer',opacity:(ft.title.trim()&&ft.dueDate)?1:.4,transition:'opacity .2s'}}>Add Goal</button>
+          </div>
+        </Modal>
+      )}
+      {modal==='changePw'&&(
+        <Modal onClose={()=>setModal(null)}>
+          <h3 style={{color:'white',marginBottom:'1.25rem',fontSize:18}}>Change Parent Password</h3>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5}}>Current Password</label>
+          <input type="password" className="inp" id="hcp" placeholder="Current password…" style={{marginBottom:'1rem'}}/>
+          <label style={{display:'block',color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:5}}>New Password</label>
+          <input type="password" className="inp" id="hnp" placeholder="New password (min 4 chars)…" style={{marginBottom:'1.25rem'}}/>
+          <div style={{display:'flex',gap:'.75rem'}}>
+            <button className="btn-ghost" style={{flex:1}} onClick={()=>setModal(null)}>Cancel</button>
+            <button onClick={()=>{const cur=document.getElementById('hcp')?.value;const nw=document.getElementById('hnp')?.value;if(cur===parentPw&&nw&&nw.length>=4){setParentPw(nw);setModal(null);toast('Password updated');}else if(cur!==parentPw){const el=document.getElementById('hcp');if(el){el.classList.add('inp-err');setTimeout(()=>el.classList.remove('inp-err'),1000);}}}} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'white',fontWeight:700,cursor:'pointer'}}>Update Password</button>
+          </div>
+        </Modal>
+      )}
+      {pwQ&&<PwModal title="Parent Confirmation Required" hint="Enter the parent password to continue" ac={ac} onConfirm={checkPw} onCancel={()=>setPwQ(null)}/>}
+    </div>
+  );
+}
+
+/* ─── Settings Panel ──────────────────────────────────────────────────── */
+function SettingsPanel({bgIdx,setBgIdx,ac,onClearAll,onLogout,onClose,username,displayName}){
+  const[confirmClear,setConfirmClear]=useState(false);
+  const[confirmLogout,setConfirmLogout]=useState(false);
+  return(
+    <Modal onClose={onClose} wide>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1.5rem'}}>
+        <h3 style={{color:'white',fontSize:18,fontWeight:700}}>⚙️ Settings</h3>
+        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'rgba(255,255,255,.08)',color:'rgba(255,255,255,.6)',fontSize:16,cursor:'pointer'}}>✕</button>
+      </div>
+
+      {/* Account info */}
+      <div className="card-sm" style={{padding:'1rem',marginBottom:'1rem',display:'flex',alignItems:'center',gap:'.85rem'}}>
+        <div style={{width:44,height:44,borderRadius:14,background:`${ac}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,fontWeight:700,color:ac,flexShrink:0}}>{(displayName||username).charAt(0).toUpperCase()}</div>
+        <div style={{flex:1}}>
+          <div style={{color:'white',fontWeight:600,fontSize:15}}>{displayName}</div>
+          <div style={{color:'rgba(255,255,255,.4)',fontSize:12,marginTop:1}}>@{username}</div>
+        </div>
+        <span style={{background:'rgba(74,222,128,.15)',color:'#4ade80',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:'1px solid rgba(74,222,128,.25)'}}>Active</span>
+      </div>
+
+      {/* Theme */}
+      <p style={{color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:'.65rem'}}>BACKGROUND THEME</p>
+      <div style={{display:'flex',gap:'.35rem',flexWrap:'wrap',marginBottom:'1.25rem'}}>
+        {BG.map((b,i)=>(
+          <button key={b.id} onClick={()=>setBgIdx(i)} style={{padding:'.42rem .85rem',borderRadius:20,fontSize:12,fontWeight:700,cursor:'pointer',transition:'all .22s',background:bgIdx===i?`linear-gradient(135deg,${b.ac}dd,${b.ac})`:'rgba(255,255,255,.08)',color:bgIdx===i?'white':'rgba(255,255,255,.5)',border:`1.5px solid ${bgIdx===i?b.ac+'55':'transparent'}`}}>
+            {b.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Data info */}
+      <p style={{color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:'.65rem'}}>DATA STORAGE</p>
+      <div className="card-sm" style={{padding:'.85rem',marginBottom:'1.25rem'}}>
+        <p style={{color:'rgba(255,255,255,.5)',fontSize:13,lineHeight:1.5}}>All your data is saved automatically to this device's local storage under your account. It persists across page refreshes and browser sessions on this device.</p>
+      </div>
+
+      {/* Danger zone */}
+      <p style={{color:'rgba(200,200,220,.65)',fontSize:12,fontWeight:600,marginBottom:'.65rem'}}>DANGER ZONE</p>
+      <div style={{display:'flex',flexDirection:'column',gap:'.6rem'}}>
+        {!confirmLogout?(
+          <button className="btn-ghost" onClick={()=>setConfirmLogout(true)} style={{textAlign:'left',display:'flex',alignItems:'center',gap:'.5rem'}}>🚪 Sign Out of Account</button>
+        ):(
+          <div style={{background:'rgba(251,191,36,.08)',borderRadius:12,padding:'1rem',border:'1px solid rgba(251,191,36,.25)'}}>
+            <p style={{color:'#fbbf24',fontWeight:600,marginBottom:'.4rem',fontSize:14}}>Sign out?</p>
+            <p style={{color:'rgba(255,220,120,.55)',fontSize:13,marginBottom:'1rem'}}>Your data will be saved. You can sign back in anytime.</p>
+            <div style={{display:'flex',gap:'.6rem'}}>
+              <button className="btn-ghost" style={{flex:1,padding:'.65rem'}} onClick={()=>setConfirmLogout(false)}>Cancel</button>
+              <button onClick={onLogout} style={{flex:1,padding:'.65rem',borderRadius:12,background:'linear-gradient(135deg,rgba(251,191,36,.6),rgba(251,191,36,.8))',color:'#1a1a1a',fontWeight:700,cursor:'pointer',fontSize:14}}>Sign Out</button>
+            </div>
+          </div>
+        )}
+        {!confirmClear?(
+          <button className="btn-danger" onClick={()=>setConfirmClear(true)} style={{textAlign:'left',display:'flex',alignItems:'center',gap:'.5rem'}}>🗑️ Delete All My Data</button>
+        ):(
+          <div style={{background:'rgba(239,68,68,.08)',borderRadius:12,padding:'1rem',border:'1px solid rgba(239,68,68,.25)'}}>
+            <p style={{color:'#f87171',fontWeight:700,marginBottom:'.4rem',fontSize:14}}>⚠️ This is permanent and cannot be undone</p>
+            <p style={{color:'rgba(255,140,140,.55)',fontSize:13,marginBottom:'1rem'}}>All classes, assignments, tasks, projects, and goals will be deleted forever.</p>
+            <div style={{display:'flex',gap:'.6rem'}}>
+              <button className="btn-ghost" style={{flex:1,padding:'.65rem'}} onClick={()=>setConfirmClear(false)}>Cancel</button>
+              <button className="btn-danger" style={{flex:1,padding:'.65rem'}} onClick={()=>{onClearAll();setConfirmClear(false);onClose();}}>Delete Everything</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+/* ─── Main App ────────────────────────────────────────────────────────── */
+function App(){
+  /* Auth state */
+  const[authUser,setAuthUser]=useState(null);   /* {username, displayName} */
+  const[authChecked,setAuthChecked]=useState(false);
+  const[showSplash,setShowSplash]=useState(false);
+
+  /* App state */
+  const[tab,setTab]=useState('school');
+  const[tabFade,setTabFade]=useState(false);
+  const[bgIdx,setBgIdx]=useState(0);
+  const[showSettings,setShowSettings]=useState(false);
+  const[sView,setSView]=useState('dashboard');
+  const[selClass,setSelClass]=useState(null);
+  const[addForClass,setAddForClass]=useState(null);
+  const[timeWindow,setTimeWindow]=useState(7);
+  const[alarm,setAlarm]=useState(null);
+  const[lockMode,setLockMode]=useState(null);
+
+  /* User data */
+  const[schoolInfo,setSchoolInfo]=useState(null);
+  const[classes,setClasses]=useState([]);
+  const[assignments,setAssignments]=useState([]);
+  const[tasks,setTasks]=useState([]);
+  const[projects,setProjects]=useState([]);
+  const[goals,setGoals]=useState([]);
+  const[parentPw,setParentPw]=useState('parent123');
+
+  const{show:toast,ToastContainer}=useToast();
+  const saveTimer=useRef(null);
+
+  const bg=BG[bgIdx];
+
+  /* On mount: restore session */
+  useEffect(()=>{
+    const sess=getSession();
+    if(sess){
+      const accts=getAccounts();
+      if(accts[sess]){
+        loadUserData(sess,accts[sess]);
+        setAuthUser({username:sess,displayName:accts[sess].displayName});
+        setShowSplash(true);
+      }
+    }
+    setAuthChecked(true);
+  },[]);
+
+  const loadUserData=(uname,acct)=>{
+    const d=getUserData(uname)||initData();
+    if(d.schoolInfo)setSchoolInfo(d.schoolInfo);
+    setClasses(d.classes||[]);
+    setAssignments(d.assignments||[]);
+    setTasks(d.tasks||[]);
+    setProjects(d.projects||[]);
+    setGoals(d.goals||[]);
+    setParentPw(d.parentPw||'parent123');
+    setBgIdx(d.bgIdx||0);
+    setTimeWindow(d.timeWindow||7);
+  };
+
+  /* Auto-save whenever data changes */
+  const saveData=useCallback(()=>{
+    if(!authUser)return;
+    const d={schoolInfo,classes,assignments,tasks,projects,goals,parentPw,bgIdx,timeWindow,savedAt:new Date().toISOString()};
+    saveUserData(authUser.username,d);
+  },[authUser,schoolInfo,classes,assignments,tasks,projects,goals,parentPw,bgIdx,timeWindow]);
+
+  useEffect(()=>{
+    if(!authUser)return;
+    clearTimeout(saveTimer.current);
+    saveTimer.current=setTimeout(()=>{saveData();},400);
+    return()=>clearTimeout(saveTimer.current);
+  },[schoolInfo,classes,assignments,tasks,projects,goals,parentPw,bgIdx,timeWindow]);
+
+  /* Alarm check */
+  useEffect(()=>{
+    if(!authUser||!schoolInfo||lockMode||alarm)return;
+    const check=()=>{const hit=assignments.find(a=>!a.submitted&&daysUntil(a.dueDate)>=0&&daysUntil(a.dueDate)<=3);if(hit)setAlarm(hit);};
+    check();
+    const t=setInterval(check,30000);
+    return()=>clearInterval(t);
+  },[assignments,authUser,schoolInfo,lockMode,alarm]);
+
+  const handleAuth=(uname,acct)=>{
+    setAuthUser({username:uname,displayName:acct.displayName});
+    loadUserData(uname,acct);
+    setShowSplash(true);
+    setSView('dashboard');setTab('school');
+    setSelClass(null);setAddForClass(null);setAlarm(null);setLockMode(null);
+  };
+
+  const handleLogout=()=>{
+    saveData();
+    setSession(null);
+    setAuthUser(null);
+    setShowSplash(false);
+    setSchoolInfo(null);setClasses([]);setAssignments([]);setTasks([]);setProjects([]);setGoals([]);
+    setParentPw('parent123');setBgIdx(0);setTimeWindow(7);
+    setSView('dashboard');setTab('school');
+    setShowSettings(false);
+    toast('Signed out successfully');
+  };
+
+  const clearAll=()=>{
+    const d=initData();
+    saveUserData(authUser.username,d);
+    setSchoolInfo(null);setClasses([]);setAssignments([]);setTasks([]);setProjects([]);setGoals([]);
+    setParentPw('parent123');setBgIdx(0);setTimeWindow(7);
+    setSView('dashboard');setSelClass(null);setAddForClass(null);setAlarm(null);setLockMode(null);
+    toast('All data deleted','warn');
+  };
+
+  const switchTab=t=>{if(t===tab)return;setTabFade(true);setTimeout(()=>{setTab(t);setTabFade(false);},240);};
+
+  /* Notification counts for tab badges */
+  const schoolBadge=assignments.filter(a=>!a.submitted&&daysUntil(a.dueDate)<0).length+assignments.filter(a=>!a.submitted&&daysUntil(a.dueDate)>=0&&daysUntil(a.dueDate)<=3).length;
+  const homeBadge=tasks.filter(t=>!t.completed).length+projects.filter(p=>!p.completed&&daysUntil(p.dueDate)<=3&&daysUntil(p.dueDate)>=0).length;
+
+  if(!authChecked)return null;
+  if(!authUser)return(<><AuthScreen onAuth={handleAuth} bg={BG[0]}/><ToastContainer/></>);
+
+  const css={height:'100%',display:'flex',flexDirection:'column',fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif',background:`linear-gradient(145deg,${bg.c1},${bg.c2},${bg.c3})`,backgroundSize:'400% 400%',animation:'gradShift 12s ease infinite',position:'relative',overflow:'hidden'};
+
+  return(
+    <div style={css}>
+      {showSplash&&<Splash bg={bg} onDone={()=>setShowSplash(false)}/>}
+      <Particles ac={bg.ac}/>
+
+      {/* Header */}
+      <div className="glass sd" style={{position:'relative',zIndex:10,padding:'.85rem 1.25rem',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:'.75rem'}}>
+          <div style={{width:36,height:36,borderRadius:10,background:`linear-gradient(135deg,${bg.ac},${bg.ac2})`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:17,flexShrink:0}}>📚</div>
+          <div>
+            <div style={{color:'white',fontWeight:800,fontSize:17,letterSpacing:'-.4px',lineHeight:1}}>StudyHome</div>
+            {schoolInfo&&<div style={{color:'rgba(255,255,255,.38)',fontSize:11,marginTop:2}}>{schoolInfo.name} · {schoolInfo.grade}</div>}
+          </div>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:'.5rem'}}>
+          {/* Auto-save indicator */}
+          <div style={{color:'rgba(74,222,128,.6)',fontSize:11,display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:20,background:'rgba(74,222,128,.08)'}}>
+            <div style={{width:6,height:6,borderRadius:'50%',background:'#4ade80'}}/>
+            Saved
+          </div>
+          <button onClick={()=>setShowSettings(true)} style={{width:36,height:36,borderRadius:10,background:'rgba(255,255,255,.08)',color:'rgba(255,255,255,.7)',fontSize:16,cursor:'pointer',transition:'background .2s',display:'flex',alignItems:'center',justifyContent:'center',border:'1px solid rgba(255,255,255,.1)'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,.16)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,.08)'}>⚙️</button>
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div className="glass" style={{position:'relative',zIndex:10,display:'flex',padding:'.65rem .9rem',gap:'.6rem',flexShrink:0}}>
+        {[['school','🎓 School',schoolBadge],['home','🏠 Home',homeBadge]].map(([t,l,badge])=>(
+          <button key={t} onClick={()=>switchTab(t)} style={{flex:1,padding:'.72rem',borderRadius:12,fontWeight:700,fontSize:15,cursor:'pointer',background:tab===t?`linear-gradient(135deg,${bg.ac}dd,${bg.ac})`:'rgba(255,255,255,.07)',color:tab===t?'white':'rgba(255,255,255,.44)',boxShadow:tab===t?`0 4px 22px ${bg.ac}44`:'none',transition:'all .32s cubic-bezier(.22,.61,.36,1)',transform:tab===t?'scale(1.02)':'scale(1)',position:'relative',border:`1px solid ${tab===t?'transparent':'rgba(255,255,255,.08)'}`}}>
+            {l}
+            {badge>0&&<span style={{position:'absolute',top:-5,right:-3,minWidth:18,height:18,borderRadius:9,background:'#ef4444',fontSize:10,fontWeight:700,color:'white',display:'flex',alignItems:'center',justifyContent:'center',padding:'0 4px'}}>{badge}</span>}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={{flex:1,overflowY:'auto',position:'relative',zIndex:5,opacity:tabFade?0:1,transition:'opacity .22s ease'}}>
+        {tab==='school'&&(
+          <>
+            {!schoolInfo&&<SchoolSetup onSave={info=>{setSchoolInfo(info);toast('School profile saved ✓');}} ac={bg.ac}/>}
+            {schoolInfo&&sView==='dashboard'&&<Dashboard user={schoolInfo} classes={classes} assignments={assignments} setAssignments={setAssignments} onClasses={()=>setSView('classes')} onAdd={()=>{setAddForClass(null);setSView('addAssignment');}} onAlarm={setAlarm} ac={bg.ac} timeWindow={timeWindow} setTimeWindow={setTimeWindow} toast={toast}/>}
+            {schoolInfo&&sView==='classes'&&<ClassesView classes={classes} setClasses={setClasses} assignments={assignments} onSelect={c=>{setSelClass(c);setSView('classDetail');}} onBack={()=>setSView('dashboard')} ac={bg.ac} toast={toast}/>}
+            {schoolInfo&&sView==='classDetail'&&selClass&&<ClassDetail cls={selClass} assignments={assignments} setAssignments={setAssignments} onBack={()=>setSView('classes')} onAddHere={()=>{setAddForClass(selClass);setSView('addAssignment');}} ac={bg.ac} toast={toast}/>}
+            {schoolInfo&&sView==='addAssignment'&&<AddAssignment classes={classes} preClass={addForClass} onAdd={a=>{setAssignments(p=>[...p,a]);setAddForClass(null);setSView('dashboard');}} onBack={()=>{setAddForClass(null);setSView(selClass?'classDetail':'dashboard');}} ac={bg.ac} toast={toast}/>}
+          </>
+        )}
+        {tab==='home'&&<HomeTab tasks={tasks} setTasks={setTasks} projects={projects} setProjects={setProjects} goals={goals} setGoals={setGoals} parentPw={parentPw} setParentPw={setParentPw} ac={bg.ac} toast={toast}/>}
+      </div>
+
+      {/* Alarm */}
+      {alarm&&!lockMode&&<AlarmOverlay asgn={alarm} cls={classes.find(c=>c.id===alarm.classId)} onLater={()=>{setAlarm(null);toast('Reminder set for 1 day before');}} onNow={()=>{setLockMode(alarm);setAlarm(null);}} onShutdown={()=>setAlarm(null)}/>}
+
+      {/* Lock */}
+      {lockMode&&<LockScreen asgn={lockMode} cls={classes.find(c=>c.id===lockMode.classId)} ac={bg.ac} toast={toast} onUnlock={()=>{setAssignments(p=>p.map(a=>a.id===lockMode.id?{...a,submitted:true}:a));setLockMode(null);}} onOverride={pw=>{if(pw===schoolInfo?.schoolId){setLockMode(null);return true;}return false;}}/>}
+
+      {/* Settings */}
+      {showSettings&&<SettingsPanel bgIdx={bgIdx} setBgIdx={setBgIdx} ac={bg.ac} onClearAll={clearAll} onLogout={handleLogout} onClose={()=>setShowSettings(false)} username={authUser.username} displayName={authUser.displayName}/>}
+
+      <ToastContainer/>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
