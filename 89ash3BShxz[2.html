@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>index</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px}
+input,select,textarea,button{font-family:inherit;outline:none;border:none}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.4;cursor:pointer}
+select option{background:#14112a;color:#fff}
+
+/* ─── Keyframes ─ */
+@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes floatA{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(14px)}}
+@keyframes drift{0%{transform:translate(0,0)}33%{transform:translate(26px,-14px)}66%{transform:translate(-16px,20px)}100%{transform:translate(0,0)}}
+@keyframes twinkle{0%,100%{opacity:.08;transform:scale(1)}50%{opacity:.7;transform:scale(1.5)}}
+@keyframes shootStar{0%{transform:translateX(0) translateY(0);opacity:1}100%{transform:translateX(-500px) translateY(280px);opacity:0}}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes su{from{transform:translateY(36px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes sd{from{transform:translateY(-36px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes sl{from{transform:translateX(48px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes sr{from{transform:translateX(-48px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@keyframes sc{from{transform:scale(.8) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes pi{from{transform:scale(.62) translateY(28px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes sheet{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.55)}50%{box-shadow:0 0 0 20px rgba(239,68,68,0)}}
+@keyframes bounce{0%{transform:scale(1)}30%{transform:scale(.9)}70%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes checkPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.3);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(30px) scale(.95)}}
+@keyframes toastIn{from{transform:translateY(64px) scale(.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+@keyframes toastOut{to{opacity:0;transform:scale(.85)}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-6px)}50%{transform:translateX(6px)}}
+@keyframes fabIn{from{transform:scale(0) translateY(16px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes timerPulse{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes streakGlow{0%,100%{text-shadow:0 0 8px rgba(251,191,36,.4)}50%{text-shadow:0 0 22px rgba(251,191,36,.9)}}
+@keyframes swipeRight{to{transform:translateX(110%) scale(.95);opacity:0}}
+@keyframes swipeLeft{to{transform:translateX(-110%) scale(.95);opacity:0}}
+@keyframes progressFill{from{width:0}}
+
+/* ─── Utility classes ─ */
+.su{animation:su .38s cubic-bezier(.22,.61,.36,1) both}
+.sd{animation:sd .38s cubic-bezier(.22,.61,.36,1) both}
+.sl{animation:sl .34s cubic-bezier(.22,.61,.36,1) both}
+.sr{animation:sr .34s cubic-bezier(.22,.61,.36,1) both}
+.fi{animation:fi .28s ease both}
+.sc{animation:sc .34s cubic-bezier(.22,.61,.36,1) both}
+.pi{animation:pi .34s cubic-bezier(.34,1.56,.64,1) both}
+.sheet-anim{animation:sheet .36s cubic-bezier(.22,.61,.36,1) both}
+.bounce{animation:bounce .3s ease both}
+.shake{animation:shake .38s ease}
+.check{animation:checkPop .36s cubic-bezier(.34,1.56,.64,1) both}
+.sw-right{animation:swipeRight .38s ease both}
+.sw-left{animation:swipeLeft .38s ease both}
+
+/* ─── Design tokens ─ */
+.glass{background:rgba(0,0,0,.22);backdrop-filter:blur(28px) saturate(180%);border-bottom:1px solid rgba(255,255,255,.07)}
+.card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:16px}
+.card-sm{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px}
+.lift{transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.lift:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(0,0,0,.35);background:rgba(255,255,255,.1)!important}
+.btn{cursor:pointer;transition:transform .12s ease,opacity .15s ease;display:inline-flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.btn:active{transform:scale(.91)!important;animation:bounce .28s ease}
+.inp{width:100%;padding:.76rem 1rem;border-radius:12px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:15px;transition:border .2s,box-shadow .2s;display:block}
+.inp:focus{border-color:rgba(255,255,255,.35);box-shadow:0 0 0 3px rgba(255,255,255,.05)}
+.inp::placeholder{color:rgba(255,255,255,.28)}
+.inp-err{border-color:#ef4444!important}
+.ghost{padding:.75rem 1rem;border-radius:12px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.82);font-weight:600;border:1.5px solid rgba(255,255,255,.1)}
+.ghost:hover{background:rgba(255,255,255,.14)!important}
+.danger{padding:.75rem 1rem;border-radius:12px;background:rgba(239,68,68,.14);color:#f87171;font-weight:700;border:1.5px solid rgba(239,68,68,.26)}
+.danger:hover{background:rgba(239,68,68,.25)!important}
+select option{background:#1a1530}
+
+/* ─── Bottom nav ─ */
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:80;display:flex;background:rgba(10,8,22,.92);backdrop-filter:blur(32px);border-top:1px solid rgba(255,255,255,.08);padding:0 .5rem;padding-bottom:env(safe-area-inset-bottom)}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem .25rem .5rem;gap:3px;cursor:pointer;transition:all .22s;background:none;border:none;-webkit-tap-highlight-color:transparent}
+.bnav-btn span:first-child{font-size:20px;line-height:1;transition:transform .22s}
+.bnav-btn.active span:first-child{transform:translateY(-2px) scale(1.12)}
+
+/* ─── FAB ─ */
+.fab{position:fixed;bottom:5rem;right:1.2rem;z-index:90;width:56px;height:56px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:300;border:none;transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s}
+.fab:active{animation:bounce .28s ease}
+.fab-opt{position:fixed;right:1.2rem;z-index:89;width:50px;height:50px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.15);transition:transform .14s ease}
+.fab-opt:active{transform:scale(.86)!important}
+.fab-lbl{position:absolute;right:60px;background:rgba(10,8,22,.94);color:#fff;font-size:13px;font-weight:600;padding:.35rem .85rem;border-radius:22px;white-space:nowrap;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px)}
+
+/* ─── Swipe feedback ─ */
+.swipe-hint-r{background:linear-gradient(90deg,rgba(74,222,128,.25),transparent)!important}
+.swipe-hint-l{background:linear-gradient(-90deg,rgba(239,68,68,.22),transparent)!important}
+
+/* ─── Sprint / Focus ─ */
+.focus-overlay{position:fixed;inset:0;z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.timer-ring{transform:rotate(-90deg)}
+</style>
+</head>
+<body><div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback,useMemo}=React;
+
+/* ══ STORAGE ══════════════════════════════════════════ */
+const AK='sg_accts_v3',SK='sg_sess_v3',DK=u=>`sg_data_v3_${u}`;
+const getAccts=()=>{try{return JSON.parse(localStorage.getItem(AK)||'{}')}catch{return{}}};
+const saveAccts=a=>localStorage.setItem(AK,JSON.stringify(a));
+const loadUD=u=>{try{return JSON.parse(localStorage.getItem(DK(u))||'null')}catch{return null}};
+const saveUD=(u,d)=>localStorage.setItem(DK(u),JSON.stringify(d));
+const getSess=()=>localStorage.getItem(SK)||null;
+const setSess=u=>u?localStorage.setItem(SK,u):localStorage.removeItem(SK);
+const hashPw=s=>{let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return'h'+Math.abs(h).toString(36)+s.length.toString(36)};
+
+/* ══ AI ═══════════════════════════════════════════════ */
+async function callClaude(prompt){
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,
+        messages:[{role:'user',content:prompt}]})
+    });
+    const d=await res.json();
+    return d.content?.[0]?.text||'No response received.';
+  }catch(e){return'Could not connect to AI. Please try again.'}
+}
+
+/* ══ CONSTANTS ═══════════════════════════════════════ */
+const BG=[
+  {id:'aurora', name:'Aurora',  c1:'#0f0c29',c2:'#302b63',c3:'#24243e',ac:'#a78bfa',ac2:'#7c3aed',type:'default'},
+  {id:'cosmic', name:'Cosmic',  c1:'#020617',c2:'#0f172a',c3:'#1e1b4b',ac:'#e879f9',ac2:'#a21caf',type:'space'},
+  {id:'ocean',  name:'Ocean',   c1:'#071620',c2:'#0c2f3e',c3:'#0e3d54',ac:'#38bdf8',ac2:'#0284c7',type:'wave'},
+  {id:'forest', name:'Forest',  c1:'#052e16',c2:'#14532d',c3:'#166534',ac:'#4ade80',ac2:'#16a34a',type:'default'},
+  {id:'sunset', name:'Sunset',  c1:'#1c0a00',c2:'#7c2d12',c3:'#92400e',ac:'#fb923c',ac2:'#ea580c',type:'default'},
+  {id:'glass',  name:'Glass',   c1:'#0d1117',c2:'#161b22',c3:'#21262d',ac:'#58a6ff',ac2:'#1f6feb',type:'glass'},
+  {id:'cherry', name:'Cherry',  c1:'#1a0010',c2:'#4a0020',c3:'#7f1d1d',ac:'#fb7185',ac2:'#e11d48',type:'default'},
+  {id:'ember',  name:'Ember',   c1:'#1c1007',c2:'#3d2100',c3:'#5e3300',ac:'#fbbf24',ac2:'#d97706',type:'default'},
+];
+const CC=['#a78bfa','#38bdf8','#4ade80','#fb923c','#f472b6','#facc15','#34d399','#818cf8','#f87171','#2dd4bf','#c084fc','#67e8f9'];
+const AT=['Homework','Quiz','Test','Project','Lab','Essay','Presentation','Other'];
+const GRADES=['6th','7th','8th','9th','10th','11th','12th','College Fr.','College So.','College Jr.','College Sr.'];
+const SPRINT=25*60;
+
+/* ══ HELPERS ═════════════════════════════════════════ */
+const gid=()=>Math.random().toString(36).slice(2,11);
+const dU=ds=>{if(!ds)return 999;const n=new Date();n.setHours(0,0,0,0);const d=new Date(ds+' ');d.setHours(0,0,0,0);return Math.round((d-n)/86400000)};
+const fD=ds=>!ds?'':new Date(ds+' ').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+const tp=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+const fmt=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+const initData=()=>({schoolInfo:null,classes:[],assignments:[],tasks:[],projects:[],goals:[],parentPw:'parent123',bgIdx:0,timeWindow:7,streak:{count:0,best:0,lastDate:null}});
+const scoreA=a=>{const d=dU(a.dueDate);return(d<0?200:d===0?100:d===1?65:d===2?42:d<=3?26:d<=7?12:4)+(Math.min(a.points/10,18))+(a.type==='Test'?10:a.type==='Project'?7:a.type==='Quiz'?3:0)+(a.priority==='High'?14:a.priority==='Low'?-5:0)};
+const topPri=(asgns,n=4)=>[...asgns.filter(a=>!a.submitted)].sort((a,b)=>scoreA(b)-scoreA(a)).slice(0,n);
+const updateStreak=(streak,asgns)=>{
+  const today=new Date().toISOString().slice(0,10);
+  if(streak.lastDate===today)return streak;
+  const miss=asgns.filter(a=>!a.submitted&&dU(a.dueDate)<0).length;
+  const yest=new Date();yest.setDate(yest.getDate()-1);
+  const ys=yest.toISOString().slice(0,10);
+  const nc=miss>0?0:streak.lastDate===ys?streak.count+1:0;
+  return{count:nc,best:Math.max(nc,streak.best||0),lastDate:today};
+};
+
+/* ══ BACKGROUNDS ═════════════════════════════════════ */
+function DefaultBg({ac}){
+  const blobs=useRef(Array.from({length:10},(_,i)=>({id:i,w:Math.random()*80+24,x:Math.random()*100,y:Math.random()*100,dur:Math.random()*10+5,del:Math.random()*-14,t:i%3}))).current;
+  const stars=useRef(Array.from({length:48},(_,i)=>({id:i,x:Math.random()*100,y:Math.random()*100,dur:Math.random()*4+2,del:Math.random()*-9}))).current;
+  return(<div style={{position:'fixed',inset:0,pointerEvents:'none',overflow:'hidden',zIndex:0}}>
+    {blobs.map(b=><div key={b.id} style={{position:'absolute',left:`${b.x}%`,top:`${b.y}%`,width:b.w,height:b.w,borderRadius:'50%',background:`radial-gradient(circle,${ac}1c,transparent)`,animation:`${['floatA','floatB','drift'][b.t]} ${b.dur}s ${b.del}s ease-in-out infinite`}}/>)}
+    {stars.map(s=><div key={s.id} style={{position:'absolute',left:`${s.x}%`,top:`${s.y}%`,width:2,height:2,borderRadius:'50%',background:'#fff',animation:`twinkle ${s.dur}s ${s.del}s ease-in-out infinite`}}/>)}
+  </div>);
+}
+function SpaceBg({ac}){
+  const stars=useRef(Array.from({length:110},(_,i)=>({id:i,x:Math.random()*100,y:Math.random()*100,sz:Math.random()<.12?3:Math.random()<.35?2:1,dur:Math.random()*5+2,del:Math.random()*-12}))).current;
+  const shoots=useRef(Array.from({length:3},(_,i)=>({id:i,x:20+i*25,y:5+i*12,del:i*4.5}))).current;
+  return(<div style={{position:'fixed',inset:0,pointerEvents:'none',overflow:'hidden',zIndex:0}}>
+    {[{x:15,y:25,c:'#a78bfa'},{x:68,y:55,c:'#38bdf8'},{x:42,y:78,c:'#e879f9'}].map((n,i)=><div key={i} style={{position:'absolute',left:`${n.x}%`,top:`${n.y}%`,width:280,height:280,borderRadius:'50%',background:`radial-gradient(circle,${n.c}10,transparent 68%)`,animation:`floatA ${10+i*3}s ${-i*4}s ease-in-out infinite`}}/>)}
+    {stars.map(s=><div key={s.id} style={{position:'absolute',left:`${s.x}%`,top:`${s.y}%`,width:s.sz,height:s.sz,borderRadius:'50%',background:'#fff',animation:`twinkle ${s.dur}s ${s.del}s ease-in-out infinite`}}/>)}
+    {shoots.map(s=><div key={s.id} style={{position:'absolute',left:`${s.x}%`,top:`${s.y}%`,width:72,height:1.5,borderRadius:2,background:'linear-gradient(90deg,#fff,transparent)',animation:`shootStar 3.5s ${s.del}s ease-in infinite`}}/>)}
+  </div>);
+}
+function WaveBg({ac,ac2}){
+  return(<div style={{position:'fixed',inset:0,pointerEvents:'none',overflow:'hidden',zIndex:0}}>
+    <div style={{position:'absolute',bottom:'-8%',left:'8%',width:'84%',height:280,background:`radial-gradient(ellipse,${ac}12,transparent 68%)`,animation:'floatB 8s ease-in-out infinite'}}/>
+    {[{h:150,y:'73%',op:.16,sp:20,c:ac},{h:120,y:'79%',op:.12,sp:16,c:ac2},{h:100,y:'85%',op:.2,sp:13,c:ac}].map((w,i)=>(
+      <div key={i} style={{position:'absolute',top:w.y,left:0,width:'200%',height:w.h,opacity:w.op,animation:`wave ${w.sp}s ${-i*3}s linear infinite`}}>
+        <svg viewBox="0 0 1440 150" preserveAspectRatio="none" style={{width:'50%',height:'100%',display:'inline-block'}}><path d={`M0,75 C180,${35+i*18} 360,${115-i*18} 540,75 C720,${35+i*18} 900,${115-i*18} 1080,75 C1260,${35+i*18} 1440,${115-i*18} 1440,75 L1440,150 L0,150 Z`} fill={w.c}/></svg>
+        <svg viewBox="0 0 1440 150" preserveAspectRatio="none" style={{width:'50%',height:'100%',display:'inline-block'}}><path d={`M0,75 C180,${35+i*18} 360,${115-i*18} 540,75 C720,${35+i*18} 900,${115-i*18} 1080,75 C1260,${35+i*18} 1440,${115-i*18} 1440,75 L1440,150 L0,150 Z`} fill={w.c}/></svg>
+      </div>))}
+    <DefaultBg ac={ac}/>
+  </div>);
+}
+function GlassBg({ac}){
+  return(<div style={{position:'fixed',inset:0,pointerEvents:'none',overflow:'hidden',zIndex:0}}>
+    {[{x:8,y:18,s:380,c:'#58a6ff'},{x:58,y:48,s:320,c:'#1f6feb'},{x:28,y:72,s:260,c:'#388bfd'}].map((b,i)=><div key={i} style={{position:'absolute',left:`${b.x}%`,top:`${b.y}%`,width:b.s,height:b.s,borderRadius:'50%',background:`radial-gradient(circle,${b.c}13,transparent 68%)`,animation:`floatA ${11+i*4}s ${-i*5}s ease-in-out infinite`}}/>)}
+    <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(88,166,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(88,166,255,.035) 1px,transparent 1px)',backgroundSize:'56px 56px'}}/>
+  </div>);
+}
+function BgLayer({bg}){
+  if(bg.type==='space')return<SpaceBg ac={bg.ac}/>;
+  if(bg.type==='wave')return<WaveBg ac={bg.ac} ac2={bg.ac2}/>;
+  if(bg.type==='glass')return<GlassBg ac={bg.ac}/>;
+  return<DefaultBg ac={bg.ac}/>;
+}
+
+/* ══ TOAST ═══════════════════════════════════════════ */
+function Toast({msg,type,onDone}){
+  const[out,setOut]=useState(false);
+  useEffect(()=>{const t=setTimeout(()=>{setOut(true);setTimeout(onDone,320)},2500);return()=>clearTimeout(t)},[]);
+  const c=type==='error'?'#ef4444':type==='warn'?'#f59e0b':type==='info'?'#38bdf8':'#4ade80';
+  return(<div style={{position:'fixed',bottom:'5.5rem',left:'50%',transform:'translateX(-50%)',zIndex:9999,animation:out?'toastOut .32s ease both':'toastIn .32s ease both',pointerEvents:'none'}}>
+    <div style={{display:'flex',alignItems:'center',gap:9,padding:'.6rem 1.1rem',borderRadius:40,background:'rgba(12,10,24,.96)',border:`1px solid ${c}35`,backdropFilter:'blur(22px)',boxShadow:`0 6px 28px rgba(0,0,0,.5)`,whiteSpace:'nowrap'}}>
+      <span style={{width:18,height:18,borderRadius:'50%',background:`${c}20`,color:c,fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,flexShrink:0}}>{type==='error'?'✕':type==='warn'?'!':type==='info'?'i':'✓'}</span>
+      <span style={{color:'#fff',fontSize:14,fontWeight:500}}>{msg}</span>
+    </div>
+  </div>);
+}
+function useToast(){
+  const[ts,setTs]=useState([]);
+  const show=(msg,type='success')=>setTs(p=>[...p.slice(-2),{id:gid(),msg,type}]);
+  const rm=id=>setTs(p=>p.filter(t=>t.id!==id));
+  const TC=()=><>{ts.map(t=><Toast key={t.id} {...t} onDone={()=>rm(t.id)}/>)}</>;
+  return{show,TC};
+}
+
+/* ══ MODAL — fixed centering, keyboard-safe ══════════ */
+function Modal({children,onClose,sheet,wide}){
+  useEffect(()=>{document.body.style.overflow='hidden';return()=>{document.body.style.overflow=''}},[]);
+  const isSheet=sheet;
+  return(
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose()}}
+      style={{position:'fixed',inset:0,zIndex:500,background:'rgba(0,0,0,.65)',backdropFilter:'blur(6px)',
+        overflowY:'auto',WebkitOverflowScrolling:'touch',
+        ...(isSheet?{display:'flex',flexDirection:'column',justifyContent:'flex-end'}:{padding:'1rem'}),
+        animation:'fi .18s ease both'}}>
+      <div className={isSheet?'sheet-anim':'pi'}
+        style={{width:'100%',maxWidth:isSheet?'100%':wide?540:460,
+          ...(isSheet?{}:{margin:'auto',marginTop:'min(6vh,3rem)'}),
+          maxHeight:isSheet?'90vh':'auto',overflowY:'auto',
+          borderRadius:isSheet?'22px 22px 0 0':'22px',
+          background:'linear-gradient(150deg,#1e1a38,#13102a)',
+          border:'1px solid rgba(255,255,255,.12)',padding:'1.75rem',
+          boxShadow:'0 -16px 60px rgba(0,0,0,.55)',marginBottom:isSheet?0:undefined}}>
+        {isSheet&&<div style={{width:38,height:4,borderRadius:2,background:'rgba(255,255,255,.18)',margin:'-0.5rem auto 1.25rem'}}/>}
+        {children}
+      </div>
+    </div>
+  );
+}
+function PwModal({title,hint,onConfirm,onCancel,ac}){
+  const[v,setV]=useState('');const[err,setErr]=useState(false);const[shk,setShk]=useState(false);
+  const go=()=>{if(!onConfirm(v)){setErr(true);setShk(true);setTimeout(()=>{setErr(false);setShk(false)},600)}};
+  return(<Modal onClose={onCancel}>
+    <div style={{display:'flex',gap:'.75rem',alignItems:'center',marginBottom:'1.25rem'}}>
+      <div style={{width:40,height:40,borderRadius:12,background:`${ac}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>🔐</div>
+      <div><h3 style={{color:'#fff',fontSize:17}}>{title}</h3>{hint&&<p style={{color:'rgba(200,200,220,.5)',fontSize:12,marginTop:2}}>{hint}</p>}</div>
+    </div>
+    <input type="password" className={`inp btn${err?' inp-err':''}${shk?' shake':''}`} style={{marginBottom:err?'.5rem':'1.25rem'}} placeholder="Enter password…" value={v} onChange={e=>setV(e.target.value)} onKeyDown={e=>e.key==='Enter'&&go()} autoFocus/>
+    {err&&<p style={{color:'#f87171',fontSize:12,marginBottom:'.75rem'}}>✕ Incorrect password</p>}
+    <div style={{display:'flex',gap:'.75rem'}}>
+      <button className="btn ghost" style={{flex:1}} onClick={onCancel}>Cancel</button>
+      <button className="btn" onClick={go} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700}}>Confirm</button>
+    </div>
+  </Modal>);
+}
+
+/* ══ RING PROGRESS ═══════════════════════════════════ */
+function Ring({pct,size=66,sw=5,color}){
+  const r=(size-sw*2)/2,circ=2*Math.PI*r;
+  return(<div style={{position:'relative',width:size,height:size,flexShrink:0}}>
+    <svg width={size} height={size} style={{transform:'rotate(-90deg)'}}>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,.08)" strokeWidth={sw}/>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={sw}
+        strokeDasharray={`${circ*pct/100} ${circ}`} strokeLinecap="round"
+        style={{transition:'stroke-dasharray .65s cubic-bezier(.22,.61,.36,1)'}}/>
+    </svg>
+    <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <span style={{color:pct>=100?'#4ade80':color,fontWeight:800,fontSize:pct>=100?11:12}}>{pct>=100?'✓':`${pct}%`}</span>
+    </div>
+  </div>);
+}
+
+/* ══ FAB ═════════════════════════════════════════════ */
+function FAB({ac,onAddAssignment,onAddTask,onAddProject,onAddClass,visible}){
+  const[open,setOpen]=useState(false);
+  if(!visible)return null;
+  const opts=[
+    {l:'Add Assignment',ic:'📝',fn:onAddAssignment,bg:'#a78bfa'},
+    {l:'Add Class',ic:'📚',fn:onAddClass,bg:'#38bdf8'},
+    {l:'Add Project',ic:'📋',fn:onAddProject,bg:'#4ade80'},
+    {l:'Add Task',ic:'✅',fn:onAddTask,bg:'#fb923c'},
+  ];
+  const base=5*16+56+6;
+  return(<>
+    {open&&<div style={{position:'fixed',inset:0,zIndex:88,background:'rgba(0,0,0,.3)',backdropFilter:'blur(3px)',animation:'fi .18s ease both'}} onClick={()=>setOpen(false)}/>}
+    {open&&opts.map((o,i)=>(
+      <div key={o.l} className="fab-opt" style={{bottom:`${base+(i+1)*60}px`,animationName:'fabIn',animationDuration:'.3s',animationTimingFunction:'cubic-bezier(.34,1.56,.64,1)',animationFillMode:'both',animationDelay:`${i*.045}s`,background:`linear-gradient(135deg,${o.bg}dd,${o.bg})`,boxShadow:`0 5px 18px ${o.bg}55`}}>
+        <button className="btn" onClick={()=>{o.fn();setOpen(false)}} style={{width:'100%',height:'100%',borderRadius:'50%',background:'transparent',fontSize:18}} title={o.l}>{o.ic}</button>
+        <span className="fab-lbl">{o.l}</span>
+      </div>
+    ))}
+    <button className="fab btn" onClick={()=>setOpen(p=>!p)}
+      style={{background:open?'linear-gradient(135deg,#ef444499,#ef4444)':`linear-gradient(135deg,${ac}dd,${ac})`,boxShadow:open?'0 6px 28px rgba(239,68,68,.45)':`0 6px 28px ${ac}44`,transform:open?'rotate(45deg)':'rotate(0)',color:'#fff',fontSize:26,fontWeight:300,transition:'transform .24s cubic-bezier(.34,1.56,.64,1),background .22s,box-shadow .22s'}}>+</button>
+  </>);
+}
+
+/* ══ GESTURE TASK CARD ═══════════════════════════════ */
+function GestureCard({children,onSwipeRight,onSwipeLeft,onLongPress,style}){
+  const ref=useRef(null);
+  const tx=useRef(0);const ts=useRef(0);const timer=useRef(null);
+  const[offset,setOffset]=useState(0);
+  const[sClass,setSClass]=useState('');
+  const[hint,setHint]=useState('');
+  const onTouchStart=e=>{
+    tx.current=e.touches[0].clientX;
+    ts.current=Date.now();
+    timer.current=setTimeout(()=>{setOffset(0);onLongPress&&onLongPress()},600);
+  };
+  const onTouchMove=e=>{
+    clearTimeout(timer.current);
+    const dx=e.touches[0].clientX-tx.current;
+    setOffset(dx);
+    setHint(dx>30?'r':dx<-30?'l':'');
+  };
+  const onTouchEnd=()=>{
+    clearTimeout(timer.current);
+    if(offset>80){setSClass('sw-right');setTimeout(()=>{onSwipeRight&&onSwipeRight();setSClass('');setOffset(0)},340)}
+    else if(offset<-80){setSClass('sw-left');setTimeout(()=>{onSwipeLeft&&onSwipeLeft();setSClass('');setOffset(0)},340)}
+    else{setOffset(0)}
+    setHint('');
+  };
+  return(<div ref={ref} className={`${sClass} ${hint==='r'?'swipe-hint-r':hint==='l'?'swipe-hint-l':''}`}
+    style={{...style,transform:sClass?undefined:`translateX(${Math.sign(offset)*Math.min(Math.abs(offset)*.7,80)}px)`,transition:offset!==0||sClass?'none':'.22s ease',willChange:'transform'}}
+    onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+    {children}
+    {hint==='r'&&<div style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',fontSize:18,opacity:.7}}>✓</div>}
+    {hint==='l'&&<div style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',fontSize:18,opacity:.7}}>⏭</div>}
+  </div>);
+}
+
+/* ══ SPRINT / FOCUS MODE ═════════════════════════════ */
+function SprintMode({asgn,cls,onDone,onExit,ac}){
+  const[sec,setSec]=useState(SPRINT);
+  const[running,setRunning]=useState(true);
+  const[done,setDone]=useState(false);
+  const total=SPRINT;
+  const pct=Math.round((1-sec/total)*100);
+  const circ=2*Math.PI*80;
+  useEffect(()=>{
+    if(!running||sec<=0){if(sec<=0)setDone(true);return}
+    const t=setInterval(()=>setSec(p=>p-1),1000);
+    return()=>clearInterval(t);
+  },[running,sec]);
+  return(<div className="focus-overlay" style={{background:'linear-gradient(145deg,#0a0818,#12102a)',animation:'fi .3s ease both'}}>
+    <DefaultBg ac={ac}/>
+    <div style={{position:'relative',zIndex:1,textAlign:'center',width:'100%',maxWidth:340,padding:'2rem 1.5rem'}}>
+      <div style={{marginBottom:'1.5rem'}}>
+        <span style={{background:'rgba(239,68,68,.18)',color:'#f87171',fontSize:12,fontWeight:700,padding:'4px 12px',borderRadius:20,border:'1px solid rgba(239,68,68,.3)'}}>🎯 SPRINT MODE</span>
+      </div>
+      {asgn&&<>
+        <div style={{color:'rgba(255,255,255,.5)',fontSize:13,marginBottom:'.4rem'}}>{cls?.name||'Assignment'}</div>
+        <h2 style={{color:'#fff',fontSize:20,fontWeight:700,marginBottom:'2rem',lineHeight:1.3}}>{asgn.title}</h2>
+      </>}
+      {/* Timer ring */}
+      <div style={{position:'relative',width:200,height:200,margin:'0 auto 2rem'}}>
+        <svg width={200} height={200} className="timer-ring">
+          <circle cx={100} cy={100} r={80} fill="none" stroke="rgba(255,255,255,.07)" strokeWidth={8}/>
+          <circle cx={100} cy={100} r={80} fill="none" stroke={sec<60?'#ef4444':sec<300?'#facc15':ac} strokeWidth={8}
+            strokeDasharray={`${circ*pct/100} ${circ}`} strokeLinecap="round"
+            style={{transition:'stroke-dasharray .8s ease,stroke .4s'}}/>
+        </svg>
+        <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+          <div style={{color:'#fff',fontWeight:800,fontSize:42,letterSpacing:'-1px',fontVariantNumeric:'tabular-nums',animation:sec<=10&&running?'timerPulse .8s ease-in-out infinite':''}}>{fmt(sec)}</div>
+          <div style={{color:'rgba(255,255,255,.4)',fontSize:13,marginTop:2}}>{done?'Done!':running?'Sprint in progress':'Paused'}</div>
+        </div>
+      </div>
+      {done?(
+        <div className="pi">
+          <div style={{fontSize:52,marginBottom:'.75rem'}}>🎉</div>
+          <h3 style={{color:'#fff',fontSize:20,fontWeight:700,marginBottom:'.5rem'}}>Sprint Complete!</h3>
+          <p style={{color:'rgba(255,255,255,.45)',fontSize:14,marginBottom:'1.5rem'}}>Great work! Take a 5 minute break.</p>
+          <button className="btn" onClick={onDone} style={{width:'100%',padding:'1rem',borderRadius:14,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700,fontSize:16}}>✅ Mark Submitted</button>
+          <button className="btn ghost" style={{width:'100%',marginTop:'.65rem',padding:'.85rem',borderRadius:14}} onClick={onExit}>Keep Going →</button>
+        </div>
+      ):(
+        <div style={{display:'flex',gap:'.65rem'}}>
+          <button className="btn" onClick={()=>setRunning(p=>!p)} style={{flex:1,padding:'.85rem',borderRadius:14,background:'rgba(255,255,255,.1)',color:'#fff',fontWeight:700,border:'1px solid rgba(255,255,255,.14)',fontSize:15}}>{running?'⏸ Pause':'▶ Resume'}</button>
+          <button className="btn" onClick={onExit} style={{flex:1,padding:'.85rem',borderRadius:14,background:'rgba(239,68,68,.15)',color:'#f87171',fontWeight:700,border:'1px solid rgba(239,68,68,.28)',fontSize:15}}>✕ Exit</button>
+        </div>
+      )}
+    </div>
+  </div>);
+}
+
+/* ══ LOCK DISTRACTIONS ════════════════════════════════ */
+function LockDistractions({asgn,onUnlock,ac}){
+  const[code,setCode]=useState('');const[err,setErr]=useState(false);
+  const SECRET='focus';
+  return(<div className="focus-overlay" style={{background:'rgba(0,0,0,.96)',animation:'fi .28s ease both',padding:'2rem 1.5rem',textAlign:'center'}}>
+    <DefaultBg ac={ac}/>
+    <div style={{position:'relative',zIndex:1,maxWidth:320,margin:'0 auto'}}>
+      <div style={{fontSize:56,marginBottom:'1rem'}}>🔐</div>
+      <h2 style={{color:'#fff',fontSize:22,fontWeight:700,marginBottom:'.5rem'}}>Distractions Locked</h2>
+      <p style={{color:'rgba(255,255,255,.4)',fontSize:14,lineHeight:1.6,marginBottom:'1.5rem'}}>Stay focused. Type <span style={{color:ac,fontWeight:700}}>"focus"</span> to unlock when you're done.</p>
+      {asgn&&<div style={{background:'rgba(255,255,255,.07)',borderRadius:14,padding:'1rem',marginBottom:'1.5rem',border:'1px solid rgba(255,255,255,.1)'}}>
+        <div style={{color:'#fff',fontWeight:600,fontSize:15}}>{asgn.title}</div>
+        <div style={{color:'rgba(255,255,255,.4)',fontSize:13,marginTop:3}}>Due: {fD(asgn.dueDate)}</div>
+      </div>}
+      <input className={`inp${err?' inp-err':''}`} placeholder='Type "focus" to unlock…' value={code} onChange={e=>setCode(e.target.value)} onKeyDown={e=>e.key==='Enter'&&(code===SECRET?onUnlock():(setErr(true),setTimeout(()=>setErr(false),600)))} style={{marginBottom:'1rem',textAlign:'center',fontSize:16}}/>
+      <button className="btn" onClick={()=>code===SECRET?onUnlock():(setErr(true),setTimeout(()=>setErr(false),600))} style={{width:'100%',padding:'1rem',borderRadius:14,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700,fontSize:15}}>Unlock</button>
+    </div>
+  </div>);
+}
+
+/* ══ AI PANEL ════════════════════════════════════════ */
+function AIPanel({asgn,cls,allAsgns,onClose,ac}){
+  const[mode,setMode]=useState(null);
+  const[loading,setLoading]=useState(false);
+  const[result,setResult]=useState('');
+  const[subtasks,setSubtasks]=useState([]);
+  const[weekPlan,setWeekPlan]=useState('');
+  const run=async(prompt,type)=>{
+    setLoading(true);setResult('');setMode(type);
+    const text=await callClaude(prompt);
+    if(type==='steps'){
+      const lines=text.split('\n').filter(l=>l.trim()&&(l.match(/^\d/)||l.match(/^[-•*]/)));
+      setSubtasks(lines.length>0?lines.map(l=>l.replace(/^[\d\.\-\•\*\s]+/,'').trim()).filter(Boolean):[text]);
+    }else if(type==='week'){setWeekPlan(text)}
+    else{setResult(text)}
+    setLoading(false);
+  };
+  const actions=[
+    {id:'explain',label:'Explain Assignment',icon:'🔍',disabled:!asgn,prompt:asgn?`Briefly explain what this school assignment likely involves and give 3 tips to start it: "${asgn.title}" (${asgn.type}, ${asgn.points} pts, class: ${cls?.name||'Unknown'}). Keep it under 150 words, student-friendly.`:null},
+    {id:'quiz',label:'Practice Quiz',icon:'📝',disabled:!asgn,prompt:asgn?`Generate 4 short practice questions for this assignment: "${asgn.title}" (${asgn.type}, class: ${cls?.name||'Unknown'}). Format: numbered questions only, no answers, keep each under 20 words.`:null},
+    {id:'steps',label:'Break Into Steps',icon:'📋',disabled:!asgn,prompt:asgn?`Break this assignment into 5 clear, actionable steps a student can do one by one: "${asgn.title}" (${asgn.type}, ${asgn.points}pts). Number them 1-5. Keep each step under 12 words.`:null},
+    {id:'week',label:'Auto-Plan My Week',icon:'📅',disabled:false,prompt:allAsgns.filter(a=>!a.submitted&&dU(a.dueDate)>=0&&dU(a.dueDate)<=7).length===0?null:`Plan a weekly study schedule for these assignments (use plain text, Monday-Sunday, short): ${allAsgns.filter(a=>!a.submitted&&dU(a.dueDate)>=0&&dU(a.dueDate)<=7).map(a=>`"${a.title}" due in ${dU(a.dueDate)}d (${a.points}pts)`).join(', ')}. Keep it under 180 words.`},
+    {id:'bad',label:'How Bad Is It?',icon:'⚠️',disabled:false,prompt:`Analyze this workload in 3 bullet points (urgent, total load, recommendation). Max 100 words. Assignments: ${allAsgns.filter(a=>!a.submitted).map(a=>`${a.title}(${a.type},${dU(a.dueDate)}d left,${a.points}pts)`).join('; ')||'No pending assignments.'}`},
+  ];
+  return(<Modal onClose={onClose} sheet>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1.1rem'}}>
+      <div style={{display:'flex',alignItems:'center',gap:'.65rem'}}>
+        <div style={{width:36,height:36,borderRadius:10,background:`${ac}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18}}>🧠</div>
+        <div><h3 style={{color:'#fff',fontSize:16,fontWeight:700}}>AI Assistant</h3><p style={{color:'rgba(200,200,220,.45)',fontSize:11}}>Powered by Claude</p></div>
+      </div>
+      <button className="btn ghost" style={{width:30,height:30,padding:0,borderRadius:10,fontSize:15}} onClick={onClose}>✕</button>
+    </div>
+    {asgn&&<div style={{background:'rgba(255,255,255,.06)',borderRadius:12,padding:'.75rem .9rem',marginBottom:'1rem',border:'1px solid rgba(255,255,255,.08)'}}>
+      <div style={{color:'rgba(255,255,255,.5)',fontSize:11,marginBottom:2}}>Selected assignment</div>
+      <div style={{color:'#fff',fontWeight:600,fontSize:14}}>{asgn.title}</div>
+    </div>}
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.5rem',marginBottom:'1rem'}}>
+      {actions.map(a=>(
+        <button key={a.id} className="btn" disabled={a.disabled||!a.prompt||loading} onClick={()=>run(a.prompt,a.id)}
+          style={{padding:'.75rem .6rem',borderRadius:12,background:mode===a.id&&!loading?`${ac}28`:a.disabled||!a.prompt?'rgba(255,255,255,.04)':'rgba(255,255,255,.08)',border:`1px solid ${mode===a.id?`${ac}55`:'rgba(255,255,255,.08)'}`,color:a.disabled||!a.prompt?'rgba(255,255,255,.25)':'rgba(255,255,255,.9)',textAlign:'center',flexDirection:'column',gap:4,opacity:a.disabled||!a.prompt?.5:1,transition:'all .2s'}}>
+          <div style={{fontSize:18}}>{a.icon}</div>
+          <div style={{fontSize:12,fontWeight:600,lineHeight:1.2}}>{a.label}</div>
+        </button>
+      ))}
+    </div>
+    {loading&&<div style={{textAlign:'center',padding:'1.5rem 0'}}>
+      <div style={{width:28,height:28,borderRadius:'50%',border:`2px solid ${ac}`,borderTopColor:'transparent',animation:'spin .7s linear infinite',margin:'0 auto .75rem'}}/>
+      <p style={{color:'rgba(255,255,255,.5)',fontSize:14}}>AI is thinking…</p>
+    </div>}
+    {!loading&&mode==='steps'&&subtasks.length>0&&(
+      <div className="sc">
+        <p style={{color:'rgba(200,200,220,.6)',fontSize:12,fontWeight:600,marginBottom:'.6rem'}}>STEPS TO COMPLETE</p>
+        {subtasks.map((s,i)=>(
+          <div key={i} style={{display:'flex',gap:'.65rem',alignItems:'flex-start',background:'rgba(255,255,255,.05)',borderRadius:10,padding:'.65rem .85rem',marginBottom:'.45rem',border:'1px solid rgba(255,255,255,.07)'}}>
+            <span style={{width:22,height:22,borderRadius:'50%',background:`${ac}22`,color:ac,fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</span>
+            <span style={{color:'#fff',fontSize:14,lineHeight:1.45}}>{s}</span>
+          </div>
+        ))}
+      </div>
+    )}
+    {!loading&&mode!=='steps'&&result&&(
+      <div className="sc" style={{background:'rgba(255,255,255,.05)',borderRadius:12,padding:'1rem',border:'1px solid rgba(255,255,255,.08)'}}>
+        <p style={{color:'rgba(200,200,220,.6)',fontSize:12,fontWeight:600,marginBottom:'.5rem'}}>{mode==='explain'?'EXPLANATION':mode==='quiz'?'PRACTICE QUESTIONS':mode==='bad'?'WORKLOAD ANALYSIS':'RESULT'}</p>
+        <p style={{color:'rgba(255,255,255,.85)',fontSize:14,lineHeight:1.6,whiteSpace:'pre-wrap'}}>{result}</p>
+      </div>
+    )}
+    {!loading&&mode==='week'&&weekPlan&&(
+      <div className="sc" style={{background:'rgba(255,255,255,.05)',borderRadius:12,padding:'1rem',border:'1px solid rgba(255,255,255,.08)'}}>
+        <p style={{color:'rgba(200,200,220,.6)',fontSize:12,fontWeight:600,marginBottom:'.5rem'}}>YOUR WEEK PLAN</p>
+        <p style={{color:'rgba(255,255,255,.82)',fontSize:13,lineHeight:1.6,whiteSpace:'pre-wrap'}}>{weekPlan}</p>
+      </div>
+    )}
+  </Modal>);
+}
+
+/* ══ SKIP CONSEQUENCE ════════════════════════════════ */
+function SkipModal({asgn,cls,onSkip,onCancel,ac}){
+  const d=dU(asgn.dueDate);
+  const items=[
+    {ic:'📉',label:'Grade impact',val:d<0?'Already overdue — every day hurts more':d===0?'Likely zero if skipped today':d<=2?'High risk of grade drop':'-5 to -15 pts estimate'},
+    {ic:'⏰',label:"Tomorrow's load",val:'This task stacks with new ones. It gets harder.'},
+    {ic:'🔥',label:'Streak impact',val:'Missing this will break your current streak to 0'},
+    {ic:'💡',label:'Better option',val:'Do just 10 minutes now — momentum builds fast'},
+  ];
+  return(<Modal onClose={onCancel} sheet>
+    <div style={{textAlign:'center',marginBottom:'1.25rem'}}>
+      <div style={{fontSize:42,marginBottom:'.5rem'}}>😬</div>
+      <h3 style={{color:'#fff',fontSize:18,fontWeight:700}}>Skip "{asgn.title}"?</h3>
+      <p style={{color:'rgba(255,255,255,.4)',fontSize:13,marginTop:.3+'rem'}}>Here's what happens if you do…</p>
+    </div>
+    {items.map((it,i)=>(
+      <div key={i} style={{display:'flex',gap:'.75rem',alignItems:'flex-start',background:'rgba(255,255,255,.05)',borderRadius:11,padding:'.75rem .9rem',marginBottom:'.45rem',border:'1px solid rgba(255,255,255,.07)'}}>
+        <span style={{fontSize:18,flexShrink:0}}>{it.ic}</span>
+        <div><div style={{color:'rgba(255,255,255,.5)',fontSize:11,fontWeight:600}}>{it.label.toUpperCase()}</div><div style={{color:'#fff',fontSize:13,marginTop:2,lineHeight:1.4}}>{it.val}</div></div>
+      </div>
+    ))}
+    <div style={{display:'flex',gap:'.65rem',marginTop:'1rem'}}>
+      <button className="btn ghost" style={{flex:1,padding:'.82rem',borderRadius:13}} onClick={onCancel}>← Do it now</button>
+      <button className="btn danger" style={{flex:1,padding:'.82rem',borderRadius:13}} onClick={onSkip}>Skip anyway</button>
+    </div>
+  </Modal>);
+}
+
+/* ══ TASK DETAIL SHEET ═══════════════════════════════ */
+function TaskDetail({asgn,cls,onClose,onSubmit,onFocus,onSprint,onSkip,onAI,onLock,ac}){
+  const d=dU(asgn.dueDate);
+  const urgency=d<0?{l:'Missing',c:'#ef4444'}:d===0?{l:'Due Today',c:'#f97316'}:d<=3?{l:`${d}d left`,c:'#facc15'}:{l:`${d}d left`,c:'rgba(255,255,255,.45)'};
+  const actions=[
+    {ic:'⚡',l:'Do Next',desc:'Set as top priority',fn:()=>{onClose();},primary:true},
+    {ic:'⏱',l:'Start 25-min Sprint',desc:'Focus timer',fn:()=>{onClose();onSprint()},primary:true},
+    {ic:'📋',l:'Break Into Steps',desc:'AI-generated subtasks',fn:()=>{onClose();onAI('steps')}},
+    {ic:'😬',l:'Skip (see impact)',desc:'View consequences first',fn:()=>{onClose();onSkip()}},
+    {ic:'⚠️',l:'How bad is it?',desc:'AI workload analysis',fn:()=>{onClose();onAI('bad')}},
+    {ic:'🔒',l:'Lock Distractions',desc:'Full-screen focus lock',fn:()=>{onClose();onLock()}},
+  ];
+  return(<Modal onClose={onClose} sheet>
+    {/* Assignment header */}
+    <div style={{marginBottom:'1.1rem'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'.3rem'}}>
+        <h3 style={{color:'#fff',fontSize:18,fontWeight:700,flex:1,marginRight:'.75rem',lineHeight:1.25}}>{asgn.title}</h3>
+        <span style={{background:`${urgency.c}1c`,color:urgency.c,fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:20,border:`1px solid ${urgency.c}30`,flexShrink:0}}>{urgency.l}</span>
+      </div>
+      <div style={{display:'flex',gap:'8px 14px',flexWrap:'wrap',color:'rgba(255,255,255,.42)',fontSize:12}}>
+
+        {cls&&<span style={{display:'flex',alignItems:'center',gap:3}}><span style={{width:8,height:8,borderRadius:'50%',background:cls.color,display:'inline-block'}}></span>{cls.name}</span>}
+        <span>{asgn.type}</span><span>{asgn.points} pts</span><span>Due {fD(asgn.dueDate)}</span>
+      </div>
+    </div>
+    {/* Primary actions */}
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.5rem',marginBottom:'.5rem'}}>
+      {actions.slice(0,2).map(a=>(
+        <button key={a.l} className="btn" onClick={a.fn} style={{padding:'.8rem .6rem',borderRadius:13,background:`linear-gradient(135deg,${ac}28,${ac}18)`,border:`1px solid ${ac}44`,color:'#fff',flexDirection:'column',gap:3,textAlign:'center'}}>
+          <span style={{fontSize:20}}>{a.ic}</span>
+          <span style={{fontWeight:700,fontSize:13}}>{a.l}</span>
+        </button>
+      ))}
+    </div>
+    {/* Secondary actions */}
+    {actions.slice(2).map(a=>(
+      <button key={a.l} className="btn lift" onClick={a.fn} style={{width:'100%',display:'flex',alignItems:'center',gap:'.75rem',padding:'.75rem .9rem',borderRadius:12,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',marginBottom:'.4rem',cursor:'pointer'}}>
+        <span style={{fontSize:18,flexShrink:0}}>{a.ic}</span>
+        <div style={{flex:1,textAlign:'left'}}>
+          <div style={{color:'#fff',fontWeight:600,fontSize:14}}>{a.l}</div>
+          <div style={{color:'rgba(255,255,255,.38)',fontSize:12,marginTop:1}}>{a.desc}</div>
+        </div>
+        <span style={{color:'rgba(255,255,255,.25)',fontSize:16}}>›</span>
+      </button>
+    ))}
+    <button className="btn" onClick={()=>{onSubmit();onClose()}} style={{width:'100%',marginTop:'.75rem',padding:'.9rem',borderRadius:14,background:`linear-gradient(135deg,#4ade80cc,#4ade80)`,color:'#0a1a0a',fontWeight:700,fontSize:15,boxShadow:'0 4px 18px rgba(74,222,128,.35)'}}>✅ Mark Submitted</button>
+  </Modal>);
+}
+
+/* ══ AUTH SCREEN ═════════════════════════════════════ */
+function AuthScreen({onAuth}){
+  const[mode,setMode]=useState('login');const[loading,setLoading]=useState(false);
+  const[f,setF]=useState({u:'',p:'',c:'',dn:''});const[errs,setErrs]=useState({});
+  const set=k=>v=>setF(p=>({...p,[k]:v}));const clr=k=>setErrs(p=>({...p,[k]:''}));
+  const bg=BG[0];
+  const submit=()=>{
+    const e={};
+    if(!f.u.trim())e.u='Required';
+    else if(f.u.trim().length<3)e.u='Min 3 chars';
+    else if(!/^[a-zA-Z0-9_]+$/.test(f.u.trim()))e.u='Letters, numbers, _ only';
+    if(mode==='register'&&!f.dn.trim())e.dn='Required';
+    if(!f.p)e.p='Required';
+    else if(mode==='register'&&f.p.length<6)e.p='Min 6 chars';
+    if(mode==='register'&&f.p!==f.c)e.c='Passwords do not match';
+    if(Object.keys(e).length){setErrs(e);return}
+    const accts=getAccts();const un=f.u.trim().toLowerCase();
+    if(mode==='login'){
+      if(!accts[un]){setErrs({u:'No account found'});return}
+      if(accts[un].pwHash!==hashPw(f.p)){setErrs({p:'Incorrect password'});return}
+    }else{
+      if(accts[un]){setErrs({u:'Username taken'});return}
+      accts[un]={pwHash:hashPw(f.p),displayName:f.dn.trim(),createdAt:new Date().toISOString()};
+      saveAccts(accts);saveUD(un,initData());
+    }
+    setLoading(true);setTimeout(()=>{setSess(un);onAuth(un,accts[un]);setLoading(false)},650);
+  };
+  const field=(k,type,ph,lbl)=>(
+    <div style={{marginBottom:'.9rem'}}>
+      <label style={{display:'block',color:'rgba(200,200,220,.6)',fontSize:12,fontWeight:600,marginBottom:4}}>{lbl}</label>
+      <input type={type} className={`inp btn${errs[k]?' inp-err':''}`} placeholder={ph} value={f[k]} onChange={e=>{set(k)(e.target.value);clr(k)}} onKeyDown={e=>e.key==='Enter'&&submit()}/>
+      {errs[k]&&<p style={{color:'#f87171',fontSize:12,marginTop:3}}>✕ {errs[k]}</p>}
+    </div>
+  );
+  return(<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden',background:`linear-gradient(145deg,${bg.c1},${bg.c2},${bg.c3})`,backgroundSize:'400% 400%',animation:'gradShift 9s ease infinite'}}>
+    <DefaultBg ac={bg.ac}/>
+    <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:400,padding:'1.5rem'}}>
+      <div className="sc" style={{textAlign:'center',marginBottom:'1.75rem'}}>
+        <div style={{width:76,height:76,borderRadius:22,background:`linear-gradient(135deg,${bg.ac},${bg.ac2})`,margin:'0 auto .9rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:`0 0 56px ${bg.ac}44`}}>
+          <span style={{color:'#fff',fontSize:34,fontWeight:900,letterSpacing:'-2px'}}>Σ</span>
+        </div>
+        <h1 style={{color:'#fff',fontSize:26,fontWeight:800,letterSpacing:'-.5px'}}>index</h1>
+        <p style={{color:'rgba(255,255,255,.38)',fontSize:13,marginTop:3}}>The tracker that thinks for you</p>
+      </div>
+      <div className="su" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.11)',borderRadius:22,padding:'1.75rem',backdropFilter:'blur(28px)',boxShadow:'0 20px 60px rgba(0,0,0,.45)'}}>
+        <div style={{display:'flex',background:'rgba(0,0,0,.25)',borderRadius:11,padding:3,marginBottom:'1.5rem',border:'1px solid rgba(255,255,255,.07)'}}>
+          {[['login','Sign In'],['register','Create Account']].map(([m,l])=>(
+            <button key={m} className="btn" onClick={()=>{setMode(m);setErrs({});setF({u:'',p:'',c:'',dn:''})}} style={{flex:1,padding:'.58rem',borderRadius:8,fontWeight:700,fontSize:14,background:mode===m?`linear-gradient(135deg,${bg.ac}dd,${bg.ac})`:'transparent',color:mode===m?'#fff':'rgba(255,255,255,.4)',boxShadow:mode===m?`0 2px 10px ${bg.ac}44`:'none',transition:'all .22s'}}>{l}</button>
+          ))}
+        </div>
+        {mode==='register'&&field('dn','text','Your full name…','Display Name')}
+        {field('u','text',mode==='login'?'Username…':'Username (a-z, 0-9, _)','Username')}
+        {field('p','password',mode==='login'?'Password…':'Password (min 6 chars)','Password')}
+        {mode==='register'&&field('c','password','Re-enter password…','Confirm Password')}
+        <button className="btn" onClick={submit} disabled={loading} style={{width:'100%',padding:'1rem',borderRadius:13,fontSize:16,fontWeight:700,background:loading?'rgba(255,255,255,.1)':`linear-gradient(135deg,${bg.ac},${bg.ac2})`,color:loading?'rgba(255,255,255,.35)':'#fff',boxShadow:loading?'none':`0 5px 22px ${bg.ac}44`,transition:'all .28s',marginTop:'.2rem',display:'flex',alignItems:'center',justifyContent:'center',gap:'.5rem'}}>
+          {loading&&<span style={{width:17,height:17,borderRadius:'50%',border:'2px solid rgba(255,255,255,.3)',borderTopColor:'#fff',animation:'spin .6s linear infinite',display:'inline-block'}}/>}
+          {loading?'Loading…':mode==='login'?'Sign In →':'Create Account →'}
+        </button>
+      </div>
+      <p style={{textAlign:'center',color:'rgba(255,255,255,.17)',fontSize:11,marginTop:'1.1rem'}}>Data saved locally on this device</p>
+    </div>
+  </div>);
+}
+
+/* ══ SPLASH ══════════════════════════════════════════ */
+function Splash({bg,onDone}){
+  const[p,setP]=useState(0);
+  useEffect(()=>{const t=[setTimeout(()=>setP(1),120),setTimeout(()=>setP(2),500),setTimeout(()=>onDone(),1300)];return()=>t.forEach(clearTimeout)},[]);
+  return(<div style={{position:'fixed',inset:0,zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',background:`linear-gradient(145deg,${bg.c1},${bg.c2},${bg.c3})`,backgroundSize:'400% 400%',animation:'gradShift 9s ease infinite',transition:'opacity .35s',opacity:p>=2?0:1,pointerEvents:p>=2?'none':'auto'}}>
+    <BgLayer bg={bg}/>
+    <div style={{position:'relative',zIndex:1,textAlign:'center'}}>
+      <div className={p>=1?'sc':''} style={{opacity:p>=1?1:0}}>
+        <div style={{width:82,height:82,borderRadius:22,background:`linear-gradient(135deg,${bg.ac},${bg.ac2})`,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:`0 0 56px ${bg.ac}55`}}>
+          <span style={{color:'#fff',fontSize:34,fontWeight:900,letterSpacing:'-2px'}}>Σ</span>
+        </div>
+      </div>
+      <div className={p>=1?'su':''} style={{opacity:p>=1?1:0,marginTop:'.9rem'}}>
+        <h1 style={{color:'#fff',fontSize:30,fontWeight:800,textShadow:`0 0 36px ${bg.ac}77`}}>index</h1>
+      </div>
+    </div>
+  </div>);
+}
+
+/* ══ SCHOOL SETUP ════════════════════════════════════ */
+function SchoolSetup({onSave,ac,existing}){
+  const[f,setF]=useState(existing||{name:'',email:'',schoolId:'',grade:''});
+  const set=k=>v=>setF(p=>({...p,[k]:v}));
+  const valid=f.name.trim()&&f.schoolId.trim()&&f.grade;
+  const lbl={display:'block',color:'rgba(200,200,220,.6)',fontSize:12,fontWeight:600,marginBottom:4};
+  return(<div className="su" style={{maxWidth:420,margin:'0 auto',padding:'1.5rem 1rem',paddingBottom:'6rem'}}>
+    <div style={{textAlign:'center',marginBottom:'1.5rem'}}>
+      <div style={{fontSize:42,marginBottom:'.4rem'}}>🎓</div>
+      <h2 style={{color:'#fff',fontSize:21,fontWeight:700}}>{existing?'Update Profile':'School Profile'}</h2>
+      <p style={{color:'rgba(255,255,255,.35)',fontSize:13,marginTop:'.25rem'}}>Set up to start tracking assignments</p>
+    </div>
+    <label style={lbl}>Full Name *</label>
+    <input className="inp" style={{marginBottom:'1rem'}} placeholder="Your full name" value={f.name} onChange={e=>set('name')(e.target.value)}/>
+    <label style={lbl}>School Email <span style={{color:'rgba(255,255,255,.28)',fontWeight:400}}>(optional)</span></label>
+    <input className="inp" type="email" style={{marginBottom:'1rem'}} placeholder="student@school.edu" value={f.email} onChange={e=>set('email')(e.target.value)}/>
+    <label style={lbl}>School ID * <span style={{color:'rgba(255,255,255,.28)',fontWeight:400}}>(used to override app lock)</span></label>
+    <input className="inp" style={{marginBottom:'1rem'}} placeholder="e.g. STU12345" value={f.schoolId} onChange={e=>set('schoolId')(e.target.value)}/>
+    <label style={lbl}>Grade *</label>
+    <select className="inp" style={{marginBottom:'1.5rem'}} value={f.grade} onChange={e=>set('grade')(e.target.value)}>
+      <option value="">Select grade…</option>
+      {GRADES.map(g=><option key={g} value={g}>{g} Grade</option>)}
+    </select>
+    <button className="btn" disabled={!valid} onClick={()=>valid&&onSave(f)} style={{width:'100%',padding:'1rem',borderRadius:13,fontSize:16,fontWeight:700,background:valid?`linear-gradient(135deg,${ac},${ac}bb)`:'rgba(255,255,255,.08)',color:valid?'#fff':'rgba(255,255,255,.22)',boxShadow:valid?`0 5px 22px ${ac}44`:'none',transition:'all .28s'}}>
+      {existing?'Save Changes':'Continue →'}
+    </button>
+  </div>);
+}
+
+/* ══ DASHBOARD ═══════════════════════════════════════ */
+function Dashboard({user,classes,assignments,setAssignments,onClasses,onAdd,ac,timeWindow,setTimeWindow,toast,streak,panicMode,setPanicMode,onSprint,onAI,onLock}){
+  const[tab,setTab]=useState('all');const[dir,setDir]=useState('l');
+  const[taskDetail,setTaskDetail]=useState(null);
+  const[showSkip,setShowSkip]=useState(null);
+  const[doneAnim,setDoneAnim]=useState({});
+  const TABS=[['all','All'],['missing','Missing'],['soon','Soon'],['done','Done']];
+  const chTab=t=>{if(t===tab)return;const ti=TABS.findIndex(x=>x[0]===t),ci=TABS.findIndex(x=>x[0]===tab);setDir(ti>ci?'l':'r');setTab(t)};
+  const markDone=id=>{setDoneAnim(p=>({...p,[id]:true}));setTimeout(()=>{setAssignments(p=>p.map(x=>x.id===id?{...x,submitted:true}:x));toast('Submitted ✓')},420)};
+  const delayTask=id=>{
+    setAssignments(p=>p.map(x=>x.id===id?{...x,dueDate:tp(dU(x.dueDate)+1)}:x));
+    toast('Delayed by 1 day','warn');
+  };
+  const miss=assignments.filter(a=>!a.submitted&&dU(a.dueDate)<0).length;
+  const urg=assignments.filter(a=>!a.submitted&&dU(a.dueDate)>=0&&dU(a.dueDate)<=3).length;
+  const done=assignments.filter(a=>a.submitted).length;
+  const pct=assignments.length?Math.round(done/assignments.length*100):0;
+  const filtered=assignments.filter(a=>{
+    const d=dU(a.dueDate);
+    if(panicMode)return!a.submitted&&(d<0||d<=3);
+    if(tab==='all')return d<=timeWindow||d<0||a.submitted;
+    if(tab==='missing')return!a.submitted&&d<0;
+    if(tab==='soon')return!a.submitted&&d>=0&&d<=timeWindow;
+    if(tab==='done')return a.submitted;
+    return true;
+  });
+  const badge=a=>{if(a.submitted)return{l:'Done',c:'#4ade80'};const d=dU(a.dueDate);if(d<0)return{l:'Missing',c:'#ef4444'};if(d===0)return{l:'Today!',c:'#f97316'};if(d===1)return{l:'Tomorrow',c:'#fb923c'};if(d<=3)return{l:`${d}d left`,c:'#facc15'};return{l:`${d}d left`,c:'rgba(255,255,255,.42)'}};
+  return(<div className="fi" style={{padding:'1rem',paddingBottom:'6rem'}}>
+    {/* Greeting */}
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'1rem'}}>
+      <div>
+        <h2 style={{color:'#fff',fontSize:20,fontWeight:700}}>Hey, {user.name.split(' ')[0]} 👋</h2>
+        <p style={{color:'rgba(255,255,255,.35)',fontSize:13,marginTop:2}}>{user.grade} Grade{user.email?` · ${user.email}`:''}</p>
+      </div>
+      {streak&&streak.count>0&&(
+        <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px 10px',borderRadius:20,background:'rgba(251,191,36,.1)',border:'1px solid rgba(251,191,36,.28)',animation:'streakGlow 2.5s ease-in-out infinite'}}>
+          <span style={{fontSize:14}}>🔥</span>
+          <span style={{color:'#fbbf24',fontWeight:700,fontSize:13}}>{streak.count}</span>
+        </div>
+      )}
+    </div>
+
+    {/* Stats */}
+    <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'.55rem',marginBottom:'1rem'}}>
+      {[{l:'Missing',v:miss,c:'#ef4444',t:'missing'},{l:'Urgent',v:urg,c:'#facc15',t:'soon'},{l:'Done',v:done,c:'#4ade80',t:'done'}].map(s=>(
+        <div key={s.l} className="card-sm lift" onClick={()=>!panicMode&&chTab(s.t)} style={{padding:'.8rem .5rem',textAlign:'center',cursor:'pointer',border:`1px solid ${s.c}1e`}}>
+          <div style={{fontSize:24,fontWeight:800,color:s.c,lineHeight:1}}>{s.v}</div>
+          <div style={{fontSize:11,color:'rgba(255,255,255,.38)',marginTop:2,fontWeight:500}}>{s.l}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* Progress */}
+    {assignments.length>0&&<div className="card-sm" style={{padding:'.8rem',marginBottom:'.85rem'}}>
+      <div style={{display:'flex',justifyContent:'space-between',marginBottom:'.4rem'}}>
+        <span style={{color:'rgba(255,255,255,.5)',fontSize:12}}>Completion</span>
+        <span style={{color:ac,fontWeight:700,fontSize:13}}>{pct}%</span>
+      </div>
+      <div style={{background:'rgba(255,255,255,.07)',borderRadius:20,height:7,overflow:'hidden'}}>
+        <div style={{width:`${pct}%`,height:'100%',background:`linear-gradient(90deg,${ac},${ac}99)`,borderRadius:20,transition:'width .7s cubic-bezier(.22,.61,.36,1)',animation:'progressFill .8s ease both'}}/>
+      </div>
+    </div>}
+
+    {/* Panic mode banner */}
+    {panicMode&&<div className="pi" style={{background:'rgba(239,68,68,.15)',border:'1px solid rgba(239,68,68,.4)',borderRadius:13,padding:'.8rem 1rem',marginBottom:'.85rem',display:'flex',alignItems:'center',gap:'.65rem'}}>
+      <span style={{fontSize:20}}>🚨</span>
+      <div style={{flex:1}}><div style={{color:'#f87171',fontWeight:700,fontSize:13}}>PANIC MODE</div><div style={{color:'rgba(255,150,150,.55)',fontSize:12}}>Overdue + urgent only</div></div>
+      <button className="btn" onClick={()=>setPanicMode(false)} style={{padding:'.35rem .7rem',borderRadius:9,background:'rgba(239,68,68,.2)',color:'#f87171',fontWeight:700,fontSize:12}}>Exit</button>
+    </div>}
+
+    {/* Action buttons */}
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.5rem',marginBottom:'.85rem'}}>
+      {[
+        {l:'Do Next',ic:'⚡',fn:()=>{const n=topPri(assignments,1)[0];if(n)setTaskDetail(n);else toast('All done!','info')},primary:true,col:ac},
+        {l:'25-min Sprint',ic:'⏱',fn:()=>{const n=topPri(assignments,1)[0];onSprint(n||null)},primary:true,col:'#4ade80'},
+        {l:'AI Assistant',ic:'🧠',fn:()=>onAI(topPri(assignments,1)[0]||null),col:'#818cf8'},
+        {l:panicMode?'Exit Panic':'Panic Mode',ic:'🚨',fn:()=>setPanicMode(p=>!p),col:panicMode?'#ef4444':'rgba(255,255,255,.5)'},
+      ].map(a=>(
+        <button key={a.l} className="btn" onClick={a.fn} style={{padding:'.72rem .5rem',borderRadius:12,background:a.primary?`linear-gradient(135deg,${a.col}28,${a.col}14)`:`rgba(255,255,255,.07)`,border:`1px solid ${a.primary?a.col+'44':'rgba(255,255,255,.09)'}`,color:a.primary?a.col:'rgba(255,255,255,.65)',fontWeight:700,fontSize:13,flexDirection:'column',gap:3,textAlign:'center'}}>
+          <span style={{fontSize:17}}>{a.ic}</span><span>{a.l}</span>
+        </button>
+      ))}
+    </div>
+    <button className="btn" onClick={()=>onLock(topPri(assignments,1)[0]||null)} style={{width:'100%',padding:'.72rem',borderRadius:12,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',color:'rgba(255,255,255,.6)',fontWeight:600,fontSize:13,marginBottom:'.85rem',display:'flex',alignItems:'center',justifyContent:'center',gap:'.5rem'}}>
+      🔒 Lock Distractions
+    </button>
+
+    {/* Time window */}
+    {!panicMode&&<div className="card-sm" style={{padding:'.8rem',marginBottom:'.85rem',display:'flex',alignItems:'center',gap:'.65rem'}}>
+      <span style={{color:'rgba(255,255,255,.42)',fontSize:12,whiteSpace:'nowrap',minWidth:48}}>Window</span>
+      <input type="range" min={1} max={30} step={1} value={timeWindow} onChange={e=>setTimeWindow(+e.target.value)} style={{flex:1,accentColor:ac}}/>
+      <span style={{color:ac,fontWeight:700,fontSize:13,minWidth:52,textAlign:'right'}}>{timeWindow===30?'1 mo':`${timeWindow}d`}</span>
+    </div>}
+
+    {/* Tabs */}
+    {!panicMode&&<div style={{display:'flex',gap:'.3rem',marginBottom:'.85rem'}}>
+      {TABS.map(([k,l])=>{
+        const cnt=k==='missing'?miss:k==='soon'?urg:k==='done'?done:assignments.length;
+        return(<button key={k} className="btn" onClick={()=>chTab(k)} style={{flex:1,padding:'.52rem .1rem',borderRadius:10,fontSize:12,fontWeight:700,background:tab===k?`linear-gradient(135deg,${ac}dd,${ac})`:'rgba(255,255,255,.07)',color:tab===k?'#fff':'rgba(255,255,255,.45)',position:'relative',transition:'all .26s'}}>
+          {l}
+          {k!=='all'&&cnt>0&&<span style={{position:'absolute',top:-5,right:-2,minWidth:15,height:15,borderRadius:8,background:k==='missing'?'#ef4444':k==='soon'?'#f59e0b':'#4ade80',fontSize:9,fontWeight:800,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',padding:'0 3px'}}>{cnt}</span>}
+        </button>);
+      })}
+    </div>}
+
+    {/* Hint */}
+    {filtered.length>0&&!panicMode&&<p style={{color:'rgba(255,255,255,.22)',fontSize:11,textAlign:'center',marginBottom:'.6rem'}}>← swipe complete · swipe delay → · tap for actions</p>}
+
+    {/* Assignment cards with gestures */}
+    <div key={panicMode?'panic':tab} className={panicMode?'fi':dir==='l'?'sl':'sr'}>
+      {filtered.length===0&&<div style={{textAlign:'center',padding:'3rem 1rem',color:'rgba(255,255,255,.25)'}}>
+        <div style={{fontSize:46,marginBottom:'.65rem'}}>{tab==='done'?'🏆':assignments.length===0?'📋':'📭'}</div>
+        <p style={{fontSize:15,fontWeight:500,color:'rgba(255,255,255,.38)'}}>{panicMode?'No urgent work!':assignments.length===0&&tab==='all'?'No assignments yet':tab==='missing'?'No missing work!':tab==='soon'?'Nothing due soon':'Nothing here'}</p>
+        {assignments.length===0&&tab==='all'&&<p style={{fontSize:12,marginTop:'.35rem',color:'rgba(255,255,255,.22)'}}>Tap + to add your first assignment</p>}
+      </div>}
+      {filtered.map((a,i)=>{
+        const b=badge(a);const cl=classes.find(c=>c.id===a.classId)||{name:'?',color:'#888'};
+        return(<GestureCard key={a.id}
+          onSwipeRight={!a.submitted?()=>markDone(a.id):null}
+          onSwipeLeft={!a.submitted?()=>delayTask(a.id):null}
+          onLongPress={!a.submitted?()=>onSprint(a):null}
+          style={{background:'rgba(255,255,255,.06)',borderRadius:14,padding:'.9rem',marginBottom:'.55rem',border:'1px solid rgba(255,255,255,.07)',borderLeft:`3px solid ${cl.color}`,borderLeftWidth:3,overflow:'hidden',animation:`su .36s cubic-bezier(.22,.61,.36,1) ${i*.044}s both`,position:'relative',opacity:doneAnim[a.id]?0:1,transform:doneAnim[a.id]?'translateX(40px) scale(.95)':undefined,transition:doneAnim[a.id]?'all .38s ease':undefined,cursor:'pointer'}}
+          >
+          <div onClick={()=>!a.submitted&&setTaskDetail(a)} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:a.submitted?0:'.45rem'}}>
+            <div style={{flex:1,marginRight:8}}>
+              <div style={{fontWeight:700,color:'#fff',fontSize:15,lineHeight:1.3}}>{a.title}</div>
+              <div style={{fontSize:12,color:'rgba(255,255,255,.4)',marginTop:3,display:'flex',gap:'6px 10px',flexWrap:'wrap'}}>
+                <span style={{display:'flex',alignItems:'center',gap:3}}><span style={{width:7,height:7,borderRadius:'50%',background:cl.color,display:'inline-block'}}></span>{cl.name}</span>
+                <span>{a.type}</span><span>{a.points}pts</span><span>Due {fD(a.dueDate)}</span>
+                {a.priority&&a.priority!=='Medium'&&<span style={{color:a.priority==='High'?'#f87171':'#94a3b8'}}>{a.priority}</span>}
+              </div>
+            </div>
+            <span style={{background:`${b.c}18`,color:b.c,fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:20,flexShrink:0,border:`1px solid ${b.c}2a`}}>{b.l}</span>
+          </div>
+          {!a.submitted&&<div style={{display:'flex',gap:'.4rem'}}>
+            <button className="btn" onClick={e=>{e.stopPropagation();markDone(a.id)}} style={{flex:1,padding:'.4rem',borderRadius:9,background:`${ac}18`,color:ac,fontSize:13,fontWeight:600,transition:'background .18s'}} onMouseOver={e=>e.currentTarget.style.background=`${ac}38`} onMouseOut={e=>e.currentTarget.style.background=`${ac}18`}>✓</button>
+            <button className="btn" onClick={e=>{e.stopPropagation();setTaskDetail(a)}} style={{flex:2,padding:'.4rem',borderRadius:9,background:'rgba(255,255,255,.07)',color:'rgba(255,255,255,.6)',fontSize:13,fontWeight:600}}>Actions</button>
+            <button className="btn" onClick={e=>{e.stopPropagation();setAssignments(p=>p.filter(x=>x.id!==a.id));toast('Removed','warn')}} style={{width:30,borderRadius:9,background:'rgba(239,68,68,.1)',color:'#f87171',fontSize:12}} onMouseOver={e=>e.currentTarget.style.background='rgba(239,68,68,.25)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239,68,68,.1)'}>✕</button>
+          </div>}
+        </GestureCard>);
+      })}
+    </div>
+
+    <div style={{display:'flex',gap:'.65rem',marginTop:'.85rem'}}>
+      <button className="btn" onClick={onClasses} style={{flex:1,padding:'.82rem',borderRadius:13,background:'rgba(255,255,255,.08)',color:'#fff',fontWeight:600,border:'1px solid rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center',gap:'.5rem'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,.14)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,.08)'}>
+        📚 Classes <span style={{background:`${ac}28`,color:ac,fontSize:12,padding:'1px 7px',borderRadius:9,fontWeight:700}}>{classes.length}</span>
+      </button>
+      <button className="btn" onClick={onAdd} style={{flex:1,padding:'.82rem',borderRadius:13,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700,boxShadow:`0 4px 18px ${ac}44`}} onMouseOver={e=>e.currentTarget.style.opacity='.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>+ Add Work</button>
+    </div>
+
+    {/* Task detail sheet */}
+    {taskDetail&&<TaskDetail asgn={taskDetail} cls={classes.find(c=>c.id===taskDetail.classId)} onClose={()=>setTaskDetail(null)} onSubmit={()=>markDone(taskDetail.id)} onFocus={()=>{}} onSprint={()=>onSprint(taskDetail)} onSkip={()=>setShowSkip(taskDetail)} onAI={(m)=>onAI(taskDetail,m)} onLock={()=>onLock(taskDetail)} ac={ac}/>}
+    {showSkip&&<SkipModal asgn={showSkip} cls={classes.find(c=>c.id===showSkip.classId)} onSkip={()=>{delayTask(showSkip.id);setShowSkip(null)}} onCancel={()=>setShowSkip(null)} ac={ac}/>}
+  </div>);
+}
+
+/* ══ CLASSES VIEW ════════════════════════════════════ */
+function ClassesView({classes,setClasses,assignments,onSelect,onBack,ac,toast}){
+  const[showAdd,setShowAdd]=useState(false);const[delId,setDelId]=useState(null);
+  const[f,setF]=useState({name:'',teacher:'',color:CC[0]});
+  const set=k=>v=>setF(p=>({...p,[k]:v}));
+  const add=()=>{if(!f.name.trim()||!f.teacher.trim())return;setClasses(p=>[...p,{id:gid(),name:f.name.trim(),teacher:f.teacher.trim(),color:f.color}]);setF({name:'',teacher:'',color:CC[0]});setShowAdd(false);toast('Class added')};
+  return(<div className="sl" style={{padding:'1rem',paddingBottom:'6rem'}}>
+    <div style={{display:'flex',alignItems:'center',gap:'.75rem',marginBottom:'1.25rem'}}>
+      <button className="btn ghost" style={{width:38,height:38,padding:0,borderRadius:11,fontSize:18}} onClick={onBack}>←</button>
+      <h2 style={{color:'#fff',flex:1,fontSize:20,fontWeight:700}}>My Classes</h2>
+      <button className="btn" onClick={()=>setShowAdd(true)} style={{padding:'.46rem .9rem',borderRadius:10,background:`${ac}22`,color:ac,fontWeight:700,fontSize:14}} onMouseOver={e=>e.currentTarget.style.background=`${ac}44`} onMouseOut={e=>e.currentTarget.style.background=`${ac}22`}>+ Add</button>
+    </div>
+    {classes.length===0&&<div style={{textAlign:'center',padding:'3.5rem 1rem',color:'rgba(255,255,255,.28)'}}>
+      <div style={{fontSize:50,marginBottom:'.7rem'}}>📚</div>
+      <p style={{fontSize:16,fontWeight:500,color:'rgba(255,255,255,.42)'}}>No classes yet</p>
+      <p style={{fontSize:13,marginTop:'.35rem'}}>Tap "Add" to create your first class</p>
+    </div>}
+    {classes.map((c,i)=>{
+      const cnt=assignments.filter(a=>a.classId===c.id).length;
+      const pend=assignments.filter(a=>a.classId===c.id&&!a.submitted).length;
+      const mis=assignments.filter(a=>a.classId===c.id&&!a.submitted&&dU(a.dueDate)<0).length;
+      return(<div key={c.id} className="su lift" style={{animationDelay:`${i*.055}s`,background:'rgba(255,255,255,.06)',borderRadius:14,padding:'.95rem',marginBottom:'.55rem',borderLeft:`4px solid ${c.color}`,display:'flex',alignItems:'center',gap:'.7rem',cursor:'pointer',border:'1px solid rgba(255,255,255,.08)',borderLeftColor:c.color,borderLeftWidth:4}} onClick={()=>onSelect(c)}>
+        <div style={{width:40,height:40,borderRadius:11,background:`${c.color}20`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:c.color,fontSize:16,fontWeight:800}}>{c.name.charAt(0)}</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontWeight:700,color:'#fff',fontSize:15,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</div>
+          <div style={{fontSize:12,color:'rgba(255,255,255,.4)',marginTop:1}}>👤 {c.teacher}</div>
+        </div>
+        <div style={{textAlign:'right',flexShrink:0}}>
+          {mis>0&&<div style={{background:'rgba(239,68,68,.18)',color:'#f87171',fontSize:11,fontWeight:700,padding:'2px 7px',borderRadius:20,marginBottom:2}}>{mis} missing</div>}
+          <div style={{color:'rgba(255,255,255,.35)',fontSize:12}}>{cnt} · {pend} pending</div>
+        </div>
+        <button className="btn" onClick={e=>{e.stopPropagation();setDelId(c.id)}} style={{width:28,height:28,borderRadius:8,background:'rgba(239,68,68,.1)',color:'#f87171',fontSize:12,flexShrink:0}} onMouseOver={e=>{e.stopPropagation();e.currentTarget.style.background='rgba(239,68,68,.25)'}} onMouseOut={e=>{e.stopPropagation();e.currentTarget.style.background='rgba(239,68,68,.1)'}}>✕</button>
+      </div>);
+    })}
+
+    {showAdd&&<Modal onClose={()=>setShowAdd(false)} sheet>
+      <h3 style={{color:'#fff',marginBottom:'1.1rem',fontSize:18}}>Add Class</h3>
+      <label style={{display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:4}}>Class Name *</label>
+      <input className="inp" style={{marginBottom:'1rem'}} placeholder="e.g. Algebra II, AP English…" value={f.name} onChange={e=>set('name')(e.target.value)} autoFocus/>
+      <label style={{display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:4}}>Teacher *</label>
+      <input className="inp" style={{marginBottom:'1.2rem'}} placeholder="e.g. Mr. Smith" value={f.teacher} onChange={e=>set('teacher')(e.target.value)}/>
+      <label style={{display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:'10px'}}>Color</label>
+      <div style={{display:'flex',gap:7,flexWrap:'wrap',marginBottom:'1.4rem'}}>
+        {CC.map(col=><button key={col} className="btn" onClick={()=>set('color')(col)} style={{width:30,height:30,borderRadius:'50%',background:col,border:`3px solid ${f.color===col?'#fff':'transparent'}`,boxShadow:f.color===col?`0 0 0 2px ${col}`:'none',transition:'all .2s'}}/>)}
+      </div>
+      <div style={{display:'flex',gap:'.65rem'}}>
+        <button className="btn ghost" style={{flex:1}} onClick={()=>setShowAdd(false)}>Cancel</button>
+        <button className="btn" disabled={!f.name.trim()||!f.teacher.trim()} onClick={add} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700,opacity:(!f.name.trim()||!f.teacher.trim())?.4:1}}>Add Class</button>
+      </div>
+    </Modal>}
+    {delId&&<Modal onClose={()=>setDelId(null)}>
+      <div style={{textAlign:'center',padding:'.5rem 0'}}>
+        <div style={{fontSize:42,marginBottom:'.65rem'}}>⚠️</div>
+        <h3 style={{color:'#fff',marginBottom:'.45rem',fontSize:18}}>Delete this class?</h3>
+        <p style={{color:'rgba(200,200,220,.48)',fontSize:14,marginBottom:'1.4rem',lineHeight:1.5}}>All assignments in this class will also be deleted.</p>
+        <div style={{display:'flex',gap:'.65rem'}}>
+          <button className="btn ghost" style={{flex:1}} onClick={()=>setDelId(null)}>Cancel</button>
+          <button className="btn danger" style={{flex:1}} onClick={()=>{setClasses(p=>p.filter(c=>c.id!==delId));setDelId(null);toast('Class deleted','warn')}}>Delete</button>
+        </div>
+      </div>
+    </Modal>}
+  </div>);
+}
+
+/* ══ CLASS DETAIL ════════════════════════════════════ */
+function ClassDetail({cls,assignments,setAssignments,onBack,onAddHere,ac,toast}){
+  const mine=assignments.filter(a=>a.classId===cls.id);
+  const[sort,setSort]=useState('date');
+  const sorted=[...mine].sort((a,b)=>sort==='date'?new Date(a.dueDate)-new Date(b.dueDate):sort==='type'?a.type.localeCompare(b.type):b.points-a.points);
+  const badge=a=>{if(a.submitted)return{l:'Done',c:'#4ade80'};const d=dU(a.dueDate);if(d<0)return{l:'Miss',c:'#ef4444'};if(d===0)return{l:'Today',c:'#f97316'};if(d<=3)return{l:`${d}d`,c:'#facc15'};return{l:`${d}d`,c:'rgba(255,255,255,.4)'}};
+  const tot=mine.reduce((s,a)=>s+a.points,0);
+  const ear=mine.filter(a=>a.submitted).reduce((s,a)=>s+a.points,0);
+  return(<div className="sl" style={{padding:'1rem',paddingBottom:'6rem'}}>
+    <div style={{display:'flex',alignItems:'center',gap:'.7rem',marginBottom:'1.1rem'}}>
+      <button className="btn ghost" style={{width:38,height:38,padding:0,borderRadius:11,fontSize:18}} onClick={onBack}>←</button>
+      <div style={{flex:1}}><h2 style={{color:'#fff',fontSize:19,fontWeight:700}}>{cls.name}</h2><p style={{color:'rgba(255,255,255,.4)',fontSize:13}}>👤 {cls.teacher}</p></div>
+      <div style={{width:14,height:14,borderRadius:'50%',background:cls.color,boxShadow:`0 0 9px ${cls.color}88`}}/>
+    </div>
+    <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'.4rem',marginBottom:'.85rem'}}>
+      {[{l:'Total',v:mine.length,c:'#818cf8'},{l:'Pending',v:mine.filter(a=>!a.submitted).length,c:'#facc15'},{l:'Missing',v:mine.filter(a=>!a.submitted&&dU(a.dueDate)<0).length,c:'#ef4444'},{l:'Done',v:mine.filter(a=>a.submitted).length,c:'#4ade80'}].map(s=>(
+        <div key={s.l} className="card-sm" style={{padding:'.6rem .3rem',textAlign:'center',border:`1px solid ${s.c}1c`}}>
+          <div style={{fontSize:18,fontWeight:800,color:s.c}}>{s.v}</div>
+          <div style={{fontSize:10,color:'rgba(255,255,255,.38)',marginTop:1}}>{s.l}</div>
+        </div>
+      ))}
+    </div>
+    {tot>0&&<div className="card-sm" style={{padding:'.78rem',marginBottom:'.85rem'}}>
+      <div style={{display:'flex',justifyContent:'space-between',marginBottom:'.36rem'}}><span style={{color:'rgba(255,255,255,.48)',fontSize:12}}>Points</span><span style={{color:ac,fontWeight:700,fontSize:12}}>{ear}/{tot}</span></div>
+      <div style={{background:'rgba(255,255,255,.07)',borderRadius:8,height:5,overflow:'hidden'}}><div style={{width:`${Math.round(ear/tot*100)}%`,height:'100%',background:`linear-gradient(90deg,${cls.color},${cls.color}88)`,borderRadius:8,transition:'width .55s'}}/></div>
+    </div>}
+    <div style={{display:'flex',gap:'.3rem',marginBottom:'.85rem',alignItems:'center'}}>
+      <span style={{color:'rgba(255,255,255,.35)',fontSize:11,marginRight:3}}>Sort:</span>
+      {[['date','Date'],['type','Type'],['points','Pts']].map(([k,l])=>(
+        <button key={k} className="btn" onClick={()=>setSort(k)} style={{padding:'.32rem .65rem',borderRadius:8,fontSize:12,fontWeight:600,background:sort===k?`${ac}28`:'rgba(255,255,255,.07)',color:sort===k?ac:'rgba(255,255,255,.48)',border:`1px solid ${sort===k?ac+'44':'transparent'}`,transition:'all .2s'}}>{l}</button>
+      ))}
+    </div>
+    {mine.length===0&&<div style={{textAlign:'center',padding:'2rem 1rem',color:'rgba(255,255,255,.28)'}}><div style={{fontSize:38,marginBottom:'.4rem'}}>📝</div><p>No assignments yet</p></div>}
+    {sorted.map((a,i)=>{const b=badge(a);return(
+      <div key={a.id} className="su lift" style={{animationDelay:`${i*.05}s`,background:'rgba(255,255,255,.06)',borderRadius:12,padding:'.85rem',marginBottom:'.5rem',borderLeft:`3px solid ${cls.color}`,border:'1px solid rgba(255,255,255,.07)',borderLeftColor:cls.color,borderLeftWidth:3}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:7}}>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{color:'#fff',fontWeight:600,fontSize:14,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.title}</div>
+            <div style={{color:'rgba(255,255,255,.38)',fontSize:12,marginTop:2}}>{a.type} · {a.points}pts · {fD(a.dueDate)}</div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:5,flexShrink:0}}>
+            <span style={{background:`${b.c}18`,color:b.c,fontSize:11,fontWeight:700,padding:'3px 8px',borderRadius:20,border:`1px solid ${b.c}28`}}>{b.l}</span>
+            {!a.submitted&&<button className="btn" onClick={()=>{setAssignments(p=>p.map(x=>x.id===a.id?{...x,submitted:true}:x));toast('Done ✓')}} style={{width:26,height:26,borderRadius:7,background:`${ac}22`,color:ac,fontSize:12}} onMouseOver={e=>e.currentTarget.style.background=`${ac}44`} onMouseOut={e=>e.currentTarget.style.background=`${ac}22`}>✓</button>}
+            <button className="btn" onClick={()=>{setAssignments(p=>p.filter(x=>x.id!==a.id));toast('Removed','warn')}} style={{width:26,height:26,borderRadius:7,background:'rgba(239,68,68,.1)',color:'#f87171',fontSize:11}} onMouseOver={e=>e.currentTarget.style.background='rgba(239,68,68,.24)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239,68,68,.1)'}>✕</button>
+          </div>
+        </div>
+      </div>
+    );})}
+    <button className="btn" onClick={onAddHere} style={{width:'100%',marginTop:'.65rem',padding:'.88rem',borderRadius:13,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700,fontSize:15,boxShadow:`0 4px 18px ${ac}44`}} onMouseOver={e=>e.currentTarget.style.opacity='.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>+ Add Assignment</button>
+  </div>);
+}
+
+/* ══ ADD ASSIGNMENT ══════════════════════════════════ */
+function AddAssignment({classes,preClass,onAdd,onBack,ac,toast}){
+  const[f,setF]=useState({classId:preClass?.id||'',title:'',type:'Homework',points:'10',dueDate:tp(1),priority:'Medium',notes:''});
+  const set=k=>v=>setF(p=>({...p,[k]:v}));
+  const valid=f.classId&&f.title.trim()&&f.dueDate&&Number(f.points)>0;
+  const lbl={display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:4};
+  return(<div className="su" style={{padding:'1rem',paddingBottom:'6rem',maxWidth:500,margin:'0 auto'}}>
+    <div style={{display:'flex',alignItems:'center',gap:'.7rem',marginBottom:'1.4rem'}}>
+      <button className="btn ghost" style={{width:38,height:38,padding:0,borderRadius:11,fontSize:18}} onClick={onBack}>←</button>
+      <h2 style={{color:'#fff',fontSize:20,fontWeight:700}}>Add Assignment</h2>
+    </div>
+    {classes.length===0?(
+      <div style={{textAlign:'center',padding:'3rem 1rem',color:'rgba(255,255,255,.38)'}}>
+        <div style={{fontSize:46,marginBottom:'.65rem'}}>📚</div>
+        <p style={{marginBottom:'1.1rem',fontSize:15}}>Add a class first</p>
+        <button className="btn" onClick={onBack} style={{padding:'.65rem 1.4rem',borderRadius:12,background:`${ac}22`,color:ac,fontWeight:700}}>← Back</button>
+      </div>
+    ):(
+      <>
+        <label style={{...lbl,marginTop:0}}>Class *</label>
+        <select className="inp" style={{marginBottom:'1rem'}} value={f.classId} onChange={e=>set('classId')(e.target.value)}>
+          <option value="">Select class…</option>
+          {classes.map(c=><option key={c.id} value={c.id}>{c.name} — {c.teacher}</option>)}
+        </select>
+        <label style={lbl}>Title *</label>
+        <input className="inp" style={{marginBottom:'1rem'}} placeholder="e.g. Chapter 5 Homework…" value={f.title} onChange={e=>set('title')(e.target.value)} autoFocus/>
+        <label style={lbl}>Type</label>
+        <div style={{display:'flex',gap:'.3rem',flexWrap:'wrap',marginBottom:'1rem'}}>
+          {AT.map(t=><button key={t} className="btn" onClick={()=>set('type')(t)} style={{padding:'.38rem .75rem',borderRadius:20,fontSize:13,fontWeight:600,background:f.type===t?`${ac}28`:'rgba(255,255,255,.07)',color:f.type===t?ac:'rgba(255,255,255,.48)',border:`1.5px solid ${f.type===t?ac+'55':'transparent'}`,transition:'all .18s'}}>{t}</button>)}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.6rem',marginBottom:'1rem'}}>
+          <div><label style={lbl}>Points *</label><input className="inp" type="number" min={1} placeholder="10" value={f.points} onChange={e=>set('points')(e.target.value)}/></div>
+          <div><label style={lbl}>Due Date *</label><input className="inp" type="date" value={f.dueDate} onChange={e=>set('dueDate')(e.target.value)}/></div>
+        </div>
+        <label style={lbl}>Priority</label>
+        <div style={{display:'flex',gap:'.3rem',marginBottom:'1rem'}}>
+          {['Low','Medium','High'].map(p=><button key={p} className="btn" onClick={()=>set('priority')(p)} style={{padding:'.38rem .85rem',borderRadius:20,fontSize:13,fontWeight:600,background:f.priority===p?(p==='High'?'rgba(239,68,68,.2)':p==='Low'?'rgba(148,163,184,.17)':'rgba(251,191,36,.17)'):'rgba(255,255,255,.07)',color:f.priority===p?(p==='High'?'#f87171':p==='Low'?'#94a3b8':'#fbbf24'):'rgba(255,255,255,.48)',transition:'all .18s'}}>{p}</button>)}
+        </div>
+        <label style={lbl}>Notes <span style={{color:'rgba(255,255,255,.26)',fontWeight:400}}>(optional)</span></label>
+        <textarea className="inp" style={{resize:'none',height:64,marginBottom:'1.2rem'}} placeholder="Any notes…" value={f.notes} onChange={e=>set('notes')(e.target.value)}/>
+        <button className="btn" disabled={!valid} onClick={()=>valid&&(onAdd({id:gid(),classId:f.classId,title:f.title.trim(),type:f.type,points:Number(f.points),dueDate:f.dueDate,priority:f.priority,notes:f.notes,submitted:false,createdAt:new Date().toISOString()}),toast('Assignment added'))} style={{width:'100%',padding:'1rem',borderRadius:13,fontSize:16,fontWeight:700,background:valid?`linear-gradient(135deg,${ac},${ac}bb)`:'rgba(255,255,255,.08)',color:valid?'#fff':'rgba(255,255,255,.22)',boxShadow:valid?`0 4px 20px ${ac}44`:'none',transition:'all .28s'}}>Add Assignment</button>
+      </>
+    )}
+  </div>);
+}
+
+/* ══ HOME TAB ════════════════════════════════════════ */
+function HomeTab({tasks,setTasks,projects,setProjects,goals,setGoals,parentPw,setParentPw,ac,toast}){
+  const[sec,setSec]=useState('tasks');const[modal,setModal]=useState(null);const[pwQ,setPwQ]=useState(null);
+  const[ft,setFt]=useState({title:'',dueDate:tp(7),desc:''});
+  const askPw=action=>setPwQ({action});
+  const checkPw=pw=>{if(pw===parentPw){pwQ.action();setPwQ(null);return true}return false};
+  const S=s=>({flex:1,padding:'.58rem .1rem',borderRadius:10,fontSize:12,fontWeight:700,cursor:'pointer',transition:'all .26s',background:sec===s?`linear-gradient(135deg,${ac}dd,${ac})`:'rgba(255,255,255,.07)',color:sec===s?'#fff':'rgba(255,255,255,.46)',position:'relative'});
+  const pT=tasks.filter(t=>!t.completed).length;
+  const pP=projects.filter(p=>!p.completed).length;
+  return(<div style={{padding:'1rem',paddingBottom:'6rem'}} className="fi">
+    <div style={{display:'flex',gap:'.3rem',marginBottom:'1.2rem'}}>
+      {[['tasks','Tasks',pT],['projects','Projects',pP],['goals','Goals',0],['settings','⚙️',0]].map(([k,l,cnt])=>(
+        <button key={k} className="btn" style={S(k)} onClick={()=>setSec(k)}>
+          {l}
+          {cnt>0&&<span style={{position:'absolute',top:-5,right:-2,minWidth:15,height:15,borderRadius:8,background:ac,fontSize:9,fontWeight:800,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',padding:'0 2px'}}>{cnt}</span>}
+        </button>
+      ))}
+    </div>
+    <div key={sec} className="sl">
+      {sec==='tasks'&&<>
+        {tasks.length===0&&<div style={{textAlign:'center',padding:'3rem 1rem',color:'rgba(255,255,255,.28)'}}><div style={{fontSize:46,marginBottom:'.55rem'}}>🧹</div><p style={{fontSize:15,color:'rgba(255,255,255,.38)',fontWeight:500}}>No tasks</p></div>}
+        {tasks.map((t,i)=>(
+          <div key={t.id} className="su lift" style={{animationDelay:`${i*.05}s`,background:'rgba(255,255,255,.06)',borderRadius:13,padding:'.88rem 1rem',marginBottom:'.5rem',borderLeft:`3px solid ${t.completed?'#4ade80':'#facc15'}`,display:'flex',alignItems:'center',gap:'.7rem',border:'1px solid rgba(255,255,255,.07)',borderLeftColor:t.completed?'#4ade80':'#facc15',borderLeftWidth:3}}>
+            <div style={{flex:1}}>
+              <div style={{color:t.completed?'rgba(255,255,255,.35)':'#fff',fontWeight:600,fontSize:15,textDecoration:t.completed?'line-through':'none'}}>{t.title}</div>
+              <div style={{color:'rgba(255,255,255,.3)',fontSize:12,marginTop:2}}>{t.completed?'✅ Completed':'⏳ Pending parent confirmation'}</div>
+            </div>
+            {!t.completed&&<button className="btn" onClick={()=>askPw(()=>{setTasks(p=>p.map(x=>x.id===t.id?{...x,completed:true}:x));toast('Done ✓')})} style={{padding:'.4rem .76rem',borderRadius:9,background:`${ac}18`,color:ac,fontSize:13,fontWeight:600,whiteSpace:'nowrap'}} onMouseOver={e=>e.currentTarget.style.background=`${ac}36`} onMouseOut={e=>e.currentTarget.style.background=`${ac}18`}>✓</button>}
+            <button className="btn" onClick={()=>askPw(()=>{setTasks(p=>p.filter(x=>x.id!==t.id));toast('Removed','warn')})} style={{width:28,height:28,borderRadius:8,background:'rgba(239,68,68,.1)',color:'#f87171',fontSize:12,flexShrink:0}} onMouseOver={e=>e.currentTarget.style.background='rgba(239,68,68,.24)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239,68,68,.1)'}>✕</button>
+          </div>
+        ))}
+        <button className="btn" onClick={()=>{setFt({title:'',dueDate:'',desc:''});setModal('task')}} style={{width:'100%',padding:'.88rem',borderRadius:13,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700,marginTop:'.5rem',boxShadow:`0 4px 17px ${ac}44`}} onMouseOver={e=>e.currentTarget.style.opacity='.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>+ Add Task</button>
+      </>}
+      {sec==='projects'&&<>
+        {projects.length===0&&<div style={{textAlign:'center',padding:'3rem 1rem',color:'rgba(255,255,255,.28)'}}><div style={{fontSize:46,marginBottom:'.55rem'}}>📋</div><p style={{fontSize:15,color:'rgba(255,255,255,.38)',fontWeight:500}}>No projects</p></div>}
+        {projects.map((p,i)=>{const d=dU(p.dueDate);const bc=p.completed?'#4ade80':d<0?'#ef4444':d<=3?'#facc15':'#818cf8';return(
+          <div key={p.id} className="su lift" style={{animationDelay:`${i*.05}s`,background:'rgba(255,255,255,.06)',borderRadius:13,padding:'.9rem',marginBottom:'.5rem',borderLeft:`3px solid ${bc}`,border:'1px solid rgba(255,255,255,.07)',borderLeftColor:bc,borderLeftWidth:3}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:p.completed?0:'.44rem'}}>
+              <div style={{flex:1,marginRight:7}}>
+                <div style={{color:p.completed?'rgba(255,255,255,.35)':'#fff',fontWeight:600,fontSize:15,textDecoration:p.completed?'line-through':'none',lineHeight:1.3}}>{p.title}</div>
+                <div style={{color:'rgba(255,255,255,.36)',fontSize:12,marginTop:2}}>Due: {fD(p.dueDate)}{!p.completed?` · ${d<0?'Overdue':d===0?'Today!':d+'d left'}`:''}</div>
+                {p.desc&&<div style={{color:'rgba(255,255,255,.26)',fontSize:12,marginTop:2,fontStyle:'italic'}}>{p.desc}</div>}
+              </div>
+              <span style={{background:`${bc}18`,color:bc,fontSize:11,fontWeight:700,padding:'3px 9px',borderRadius:20,flexShrink:0,border:`1px solid ${bc}28`}}>{p.completed?'Done':d<0?'Overdue':'Active'}</span>
+            </div>
+            {!p.completed&&<div style={{display:'flex',gap:'.4rem'}}>
+              <button className="btn" onClick={()=>askPw(()=>{setProjects(prev=>prev.map(x=>x.id===p.id?{...x,completed:true}:x));toast('Done ✓')})} style={{flex:1,padding:'.4rem',borderRadius:9,background:`${ac}18`,color:ac,fontSize:13,fontWeight:600}} onMouseOver={e=>e.currentTarget.style.background=`${ac}36`} onMouseOut={e=>e.currentTarget.style.background=`${ac}18`}>✓ Complete</button>
+              <button className="btn" onClick={()=>askPw(()=>{setProjects(prev=>prev.filter(x=>x.id!==p.id));toast('Removed','warn')})} style={{width:30,borderRadius:9,background:'rgba(239,68,68,.1)',color:'#f87171',fontSize:12}} onMouseOver={e=>e.currentTarget.style.background='rgba(239,68,68,.24)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239,68,68,.1)'}>✕</button>
+            </div>}
+          </div>
+        );})}
+        <button className="btn" onClick={()=>{setFt({title:'',dueDate:tp(7),desc:''});setModal('project')}} style={{width:'100%',padding:'.88rem',borderRadius:13,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700,marginTop:'.5rem',boxShadow:`0 4px 17px ${ac}44`}} onMouseOver={e=>e.currentTarget.style.opacity='.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>+ Add Project</button>
+      </>}
+      {sec==='goals'&&<>
+        {goals.length===0&&<div style={{textAlign:'center',padding:'3rem 1rem',color:'rgba(255,255,255,.28)'}}><div style={{fontSize:46,marginBottom:'.55rem'}}>🎯</div><p style={{fontSize:15,color:'rgba(255,255,255,.38)',fontWeight:500}}>No goals</p></div>}
+        {goals.map((g,i)=>(
+          <div key={g.id} className="su lift" style={{animationDelay:`${i*.05}s`,background:'rgba(255,255,255,.06)',borderRadius:13,padding:'.9rem',marginBottom:'.55rem',border:'1px solid rgba(255,255,255,.08)'}}>
+            <div style={{display:'flex',gap:'.8rem',alignItems:'center',marginBottom:'.75rem'}}>
+              <Ring pct={g.progress} size={62} sw={5} color={g.progress>=100?'#4ade80':ac}/>
+              <div style={{flex:1}}>
+                <div style={{color:'#fff',fontWeight:700,fontSize:15,lineHeight:1.3}}>{g.title}</div>
+                <div style={{color:'rgba(255,255,255,.36)',fontSize:12,marginTop:2}}>Target: {fD(g.dueDate)}</div>
+              </div>
+              <button className="btn" onClick={()=>askPw(()=>{setGoals(p=>p.filter(x=>x.id!==g.id));toast('Removed','warn')})} style={{width:27,height:27,borderRadius:8,background:'rgba(239,68,68,.1)',color:'#f87171',fontSize:11,flexShrink:0,alignSelf:'flex-start'}} onMouseOver={e=>e.currentTarget.style.background='rgba(239,68,68,.24)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239,68,68,.1)'}>✕</button>
+            </div>
+            <div style={{background:'rgba(255,255,255,.07)',borderRadius:20,height:6,overflow:'hidden',marginBottom:'.44rem'}}>
+              <div style={{width:`${g.progress}%`,height:'100%',background:g.progress>=100?`linear-gradient(90deg,#4ade80,#22c55e)`:`linear-gradient(90deg,${ac},${ac}88)`,borderRadius:20,transition:'width .65s cubic-bezier(.22,.61,.36,1)'}}/>
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:'.6rem'}}>
+              <input type="range" min={0} max={100} step={5} value={g.progress} onChange={e=>setGoals(p=>p.map(x=>x.id===g.id?{...x,progress:+e.target.value}:x))} style={{flex:1,accentColor:ac,cursor:'pointer'}}/>
+              {g.progress>=100&&<span className="check" style={{color:'#4ade80',fontWeight:700,fontSize:12,whiteSpace:'nowrap'}}>🎉 Done!</span>}
+            </div>
+          </div>
+        ))}
+        <button className="btn" onClick={()=>{setFt({title:'',dueDate:tp(30),desc:''});setModal('goal')}} style={{width:'100%',padding:'.88rem',borderRadius:13,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700,marginTop:'.5rem',boxShadow:`0 4px 17px ${ac}44`}} onMouseOver={e=>e.currentTarget.style.opacity='.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>+ Add Goal</button>
+      </>}
+      {sec==='settings'&&<div className="sc">
+        <div className="card-sm" style={{padding:'1.1rem',marginBottom:'.9rem'}}>
+          <div style={{display:'flex',alignItems:'center',gap:'.7rem',marginBottom:'.65rem'}}>
+            <div style={{width:34,height:34,borderRadius:10,background:`${ac}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:17}}>🔐</div>
+            <div><h3 style={{color:'#fff',fontSize:14,fontWeight:700}}>Parental Controls</h3><p style={{color:'rgba(255,255,255,.36)',fontSize:12}}>Default: <span style={{color:ac,fontWeight:700}}>parent123</span></p></div>
+          </div>
+          <button className="btn" onClick={()=>setModal('changePw')} style={{width:'100%',padding:'.8rem',borderRadius:11,background:`${ac}18`,color:ac,fontWeight:700,border:`1px solid ${ac}30`}} onMouseOver={e=>e.currentTarget.style.background=`${ac}36`} onMouseOut={e=>e.currentTarget.style.background=`${ac}18`}>Change Password</button>
+        </div>
+        <div className="card-sm" style={{padding:'1.1rem'}}>
+          <h3 style={{color:'#fff',fontSize:14,fontWeight:700,marginBottom:'.85rem'}}>📊 Summary</h3>
+          {[['Tasks',tasks.filter(t=>!t.completed).length,tasks.length],['Projects',projects.filter(p=>!p.completed).length,projects.length],['Goals',goals.filter(g=>g.progress<100).length,goals.length]].map(([k,pend,tot])=>(
+            <div key={k} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'.5rem 0',borderBottom:'1px solid rgba(255,255,255,.05)'}}>
+              <span style={{color:'rgba(255,255,255,.5)',fontSize:14}}>{k}</span>
+              <div style={{display:'flex',gap:7,alignItems:'center'}}>
+                {pend>0&&<span style={{background:`${ac}20`,color:ac,fontSize:11,fontWeight:700,padding:'2px 7px',borderRadius:9}}>{pend} pending</span>}
+                <span style={{color:'rgba(255,255,255,.35)',fontSize:13}}>{tot} total</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>}
+    </div>
+    {modal==='task'&&<Modal onClose={()=>setModal(null)} sheet>
+      <h3 style={{color:'#fff',marginBottom:'1rem',fontSize:17}}>Add Task</h3>
+      <label style={{display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:4}}>Task *</label>
+      <input className="inp" style={{marginBottom:'1.2rem'}} placeholder="e.g. Clean your room…" value={ft.title} onChange={e=>setFt(p=>({...p,title:e.target.value}))} autoFocus/>
+      <div style={{display:'flex',gap:'.65rem'}}>
+        <button className="btn ghost" style={{flex:1}} onClick={()=>setModal(null)}>Cancel</button>
+        <button className="btn" disabled={!ft.title.trim()} onClick={()=>ft.title.trim()&&askPw(()=>{setTasks(p=>[...p,{id:gid(),title:ft.title.trim(),completed:false}]);setModal(null);toast('Task added')})} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700,opacity:ft.title.trim()?1:.4}}>Add Task</button>
+      </div>
+    </Modal>}
+    {modal==='project'&&<Modal onClose={()=>setModal(null)} sheet>
+      <h3 style={{color:'#fff',marginBottom:'1rem',fontSize:17}}>Add Project</h3>
+      <label style={{display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:4}}>Title *</label>
+      <input className="inp" style={{marginBottom:'.9rem'}} placeholder="e.g. Create travel slides…" value={ft.title} onChange={e=>setFt(p=>({...p,title:e.target.value}))} autoFocus/>
+      <label style={{display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:4}}>Notes <span style={{color:'rgba(255,255,255,.26)',fontWeight:400}}>(optional)</span></label>
+      <textarea className="inp" style={{resize:'none',height:56,marginBottom:'.9rem'}} value={ft.desc} onChange={e=>setFt(p=>({...p,desc:e.target.value}))} placeholder="Details…"/>
+      <label style={{display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:4}}>Due Date *</label>
+      <input className="inp" type="date" style={{marginBottom:'1.2rem'}} value={ft.dueDate} onChange={e=>setFt(p=>({...p,dueDate:e.target.value}))}/>
+      <div style={{display:'flex',gap:'.65rem'}}>
+        <button className="btn ghost" style={{flex:1}} onClick={()=>setModal(null)}>Cancel</button>
+        <button className="btn" disabled={!ft.title.trim()||!ft.dueDate} onClick={()=>(ft.title.trim()&&ft.dueDate)&&askPw(()=>{setProjects(p=>[...p,{id:gid(),title:ft.title.trim(),desc:ft.desc,dueDate:ft.dueDate,completed:false}]);setModal(null);toast('Project added')})} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700,opacity:(ft.title.trim()&&ft.dueDate)?1:.4}}>Add</button>
+      </div>
+    </Modal>}
+    {modal==='goal'&&<Modal onClose={()=>setModal(null)} sheet>
+      <h3 style={{color:'#fff',marginBottom:'1rem',fontSize:17}}>Add Goal</h3>
+      <label style={{display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:4}}>Goal *</label>
+      <input className="inp" style={{marginBottom:'.9rem'}} placeholder="e.g. Read 5 books…" value={ft.title} onChange={e=>setFt(p=>({...p,title:e.target.value}))} autoFocus/>
+      <label style={{display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:4}}>Target Date *</label>
+      <input className="inp" type="date" style={{marginBottom:'1.2rem'}} value={ft.dueDate} onChange={e=>setFt(p=>({...p,dueDate:e.target.value}))}/>
+      <div style={{display:'flex',gap:'.65rem'}}>
+        <button className="btn ghost" style={{flex:1}} onClick={()=>setModal(null)}>Cancel</button>
+        <button className="btn" disabled={!ft.title.trim()||!ft.dueDate} onClick={()=>(ft.title.trim()&&ft.dueDate)&&askPw(()=>{setGoals(p=>[...p,{id:gid(),title:ft.title.trim(),desc:ft.desc,dueDate:ft.dueDate,progress:0}]);setModal(null);toast('Goal added')})} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700,opacity:(ft.title.trim()&&ft.dueDate)?1:.4}}>Add</button>
+      </div>
+    </Modal>}
+    {modal==='changePw'&&<Modal onClose={()=>setModal(null)}>
+      <h3 style={{color:'#fff',marginBottom:'1.1rem',fontSize:17}}>Change Parent Password</h3>
+      <label style={{display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:4}}>Current</label>
+      <input type="password" className="inp" id="hcp" style={{marginBottom:'.85rem'}} placeholder="Current password…"/>
+      <label style={{display:'block',color:'rgba(200,200,220,.58)',fontSize:12,fontWeight:600,marginBottom:4}}>New (min 4 chars)</label>
+      <input type="password" className="inp" id="hnp" style={{marginBottom:'1.2rem'}} placeholder="New password…"/>
+      <div style={{display:'flex',gap:'.65rem'}}>
+        <button className="btn ghost" style={{flex:1}} onClick={()=>setModal(null)}>Cancel</button>
+        <button className="btn" onClick={()=>{const c=document.getElementById('hcp')?.value,n=document.getElementById('hnp')?.value;if(c===parentPw&&n?.length>=4){setParentPw(n);setModal(null);toast('Password updated')}else{const el=document.getElementById(c!==parentPw?'hcp':'hnp');if(el){el.classList.add('inp-err');setTimeout(()=>el.classList.remove('inp-err'),800)}}}} style={{flex:2,padding:'.8rem',borderRadius:12,background:`linear-gradient(135deg,${ac}dd,${ac})`,color:'#fff',fontWeight:700}}>Update</button>
+      </div>
+    </Modal>}
+    {pwQ&&<PwModal title="Parent Confirmation" hint="Enter parent password" ac={ac} onConfirm={checkPw} onCancel={()=>setPwQ(null)}/>}
+  </div>);
+}
+
+/* ══ SETTINGS PANEL ══════════════════════════════════ */
+function SettingsPanel({bgIdx,setBgIdx,ac,onClearAll,onLogout,onClose,username,displayName,streak}){
+  const[cc,setCC]=useState(false);const[cl,setCL]=useState(false);
+  return(<Modal onClose={onClose}>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1.35rem'}}>
+      <h3 style={{color:'#fff',fontSize:17,fontWeight:700}}>⚙️ Settings</h3>
+      <button className="btn ghost" style={{width:30,height:30,padding:0,borderRadius:9,fontSize:15}} onClick={onClose}>✕</button>
+    </div>
+    <div className="card-sm" style={{padding:'.9rem',marginBottom:'.9rem',display:'flex',alignItems:'center',gap:'.8rem'}}>
+      <div style={{width:42,height:42,borderRadius:13,background:`${ac}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:19,fontWeight:800,color:ac,flexShrink:0}}>{(displayName||username).charAt(0).toUpperCase()}</div>
+      <div style={{flex:1}}><div style={{color:'#fff',fontWeight:600,fontSize:15}}>{displayName}</div><div style={{color:'rgba(255,255,255,.36)',fontSize:12,marginTop:1}}>@{username}</div></div>
+      {streak&&streak.count>0&&<div style={{display:'flex',alignItems:'center',gap:4,padding:'3px 9px',borderRadius:20,background:'rgba(251,191,36,.1)',border:'1px solid rgba(251,191,36,.25)',animation:'streakGlow 2.5s ease-in-out infinite'}}><span style={{fontSize:13}}>🔥</span><span style={{color:'#fbbf24',fontWeight:700,fontSize:13}}>{streak.count}</span></div>}
+    </div>
+    {streak&&<div className="card-sm" style={{padding:'.85rem',marginBottom:'.9rem',display:'flex',gap:'1.1rem'}}>
+      {[{l:'Streak',v:streak.count,ic:'🔥'},{l:'Best',v:streak.best||0,ic:'🏆'}].map(s=>(
+        <div key={s.l} style={{flex:1,textAlign:'center'}}>
+          <div style={{fontSize:19}}>{s.ic}</div>
+          <div style={{color:'#fbbf24',fontWeight:800,fontSize:19}}>{s.v}</div>
+          <div style={{color:'rgba(255,255,255,.35)',fontSize:11,marginTop:1}}>{s.l}</div>
+        </div>
+      ))}
+    </div>}
+    <p style={{color:'rgba(200,200,220,.55)',fontSize:11,fontWeight:600,marginBottom:'.55rem',letterSpacing:'.04em'}}>THEME</p>
+    <div style={{display:'flex',gap:'.3rem',flexWrap:'wrap',marginBottom:'1.3rem'}}>
+      {BG.map((b,i)=><button key={b.id} className="btn" onClick={()=>setBgIdx(i)} style={{padding:'.4rem .8rem',borderRadius:20,fontSize:12,fontWeight:700,background:bgIdx===i?`linear-gradient(135deg,${b.ac}dd,${b.ac})`:'rgba(255,255,255,.08)',color:bgIdx===i?'#fff':'rgba(255,255,255,.48)',border:`1.5px solid ${bgIdx===i?b.ac+'55':'transparent'}`,transition:'all .2s'}}>{b.name}</button>)}
+    </div>
+    <div className="card-sm" style={{padding:'.82rem',marginBottom:'1.1rem'}}>
+      <p style={{color:'rgba(255,255,255,.42)',fontSize:13,lineHeight:1.5}}>💾 All data saved automatically to this device's local storage. Persists across refreshes.</p>
+    </div>
+    <p style={{color:'rgba(200,200,220,.55)',fontSize:11,fontWeight:600,marginBottom:'.55rem',letterSpacing:'.04em'}}>ACCOUNT</p>
+    <div style={{display:'flex',flexDirection:'column',gap:'.55rem'}}>
+      {!cl?<button className="btn ghost" onClick={()=>setCL(true)} style={{textAlign:'left',display:'flex',alignItems:'center',gap:'.5rem'}}>🚪 Sign Out</button>:(
+        <div style={{background:'rgba(251,191,36,.07)',borderRadius:11,padding:'.9rem',border:'1px solid rgba(251,191,36,.2)'}}>
+          <p style={{color:'#fbbf24',fontWeight:600,marginBottom:'.3rem',fontSize:13}}>Sign out?</p>
+          <p style={{color:'rgba(255,220,120,.45)',fontSize:12,marginBottom:'.85rem'}}>Data stays saved.</p>
+          <div style={{display:'flex',gap:'.55rem'}}>
+            <button className="btn ghost" style={{flex:1,padding:'.6rem'}} onClick={()=>setCL(false)}>Cancel</button>
+            <button className="btn" onClick={onLogout} style={{flex:1,padding:'.6rem',borderRadius:11,background:'linear-gradient(135deg,rgba(251,191,36,.65),rgba(251,191,36,.85))',color:'#1a1a1a',fontWeight:700,fontSize:13}}>Sign Out</button>
+          </div>
+        </div>
+      )}
+      {!cc?<button className="btn danger" onClick={()=>setCC(true)} style={{textAlign:'left',display:'flex',alignItems:'center',gap:'.5rem'}}>🗑️ Delete All Data</button>:(
+        <div style={{background:'rgba(239,68,68,.07)',borderRadius:11,padding:'.9rem',border:'1px solid rgba(239,68,68,.2)'}}>
+          <p style={{color:'#f87171',fontWeight:700,marginBottom:'.3rem',fontSize:13}}>⚠️ Permanent — cannot be undone</p>
+          <p style={{color:'rgba(255,140,140,.45)',fontSize:12,marginBottom:'.85rem'}}>All data will be deleted forever.</p>
+          <div style={{display:'flex',gap:'.55rem'}}>
+            <button className="btn ghost" style={{flex:1,padding:'.6rem'}} onClick={()=>setCC(false)}>Cancel</button>
+            <button className="btn danger" style={{flex:1,padding:'.6rem'}} onClick={()=>{onClearAll();setCC(false);onClose()}}>Delete All</button>
+          </div>
+        </div>
+      )}
+    </div>
+  </Modal>);
+}
+
+/* ══ ALARM + LOCK ════════════════════════════════════ */
+function AlarmOverlay({asgn,cls,onLater,onNow,onShutdown}){
+  const d=dU(asgn.dueDate);
+  return(<div style={{position:'fixed',inset:0,zIndex:800,background:'rgba(0,0,0,.92)',display:'flex',alignItems:'center',justifyContent:'center',padding:'1.2rem',animation:'fi .25s ease both'}}>
+    <div style={{width:'100%',maxWidth:380,background:'linear-gradient(145deg,#1e0808,#2c0f0f)',borderRadius:22,padding:'1.75rem',border:'2px solid #ef4444',boxShadow:'0 0 70px rgba(239,68,68,.28)',animation:'pulse 1.2s ease-in-out infinite',textAlign:'center'}}>
+      <div style={{fontSize:50,marginBottom:'.8rem'}}>🚨</div>
+      <h2 style={{color:'#f87171',fontSize:21,marginBottom:'.4rem',fontWeight:700}}>Due in {d} Day{d!==1?'s':''}!</h2>
+      <div style={{background:'rgba(239,68,68,.12)',borderRadius:12,padding:'.9rem',marginBottom:'1.35rem',border:'1px solid rgba(239,68,68,.2)'}}>
+        <div style={{color:'#fff',fontWeight:700,fontSize:15,marginBottom:3}}>{asgn.title}</div>
+        <div style={{color:'rgba(255,180,180,.55)',fontSize:13,display:'flex',justifyContent:'center',gap:10,flexWrap:'wrap'}}><span>{cls?.name||'Unknown'}</span><span>·</span><span>{asgn.type}</span><span>·</span><span>{asgn.points}pts</span></div>
+        <div style={{color:'#f87171',fontSize:13,marginTop:5,fontWeight:500}}>Due: {fD(asgn.dueDate)}</div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:'.6rem'}}>
+        <button className="btn" onClick={onNow} style={{padding:'.9rem',borderRadius:13,background:'linear-gradient(135deg,rgba(239,68,68,.8),#ef4444)',color:'#fff',fontWeight:700,fontSize:15}}>⚡ Do It Now — Lock App</button>
+        <button className="btn ghost" onClick={onLater} style={{padding:'.8rem',borderRadius:13}}>⏰ Remind Me Later</button>
+        <button className="btn" onClick={onShutdown} style={{padding:'.65rem',borderRadius:13,background:'transparent',color:'rgba(255,255,255,.3)',fontWeight:600,fontSize:12}}>🔒 Dead Shutdown</button>
+      </div>
+    </div>
+  </div>);
+}
+function LockScreen({asgn,cls,onUnlock,onOverride,ac,toast}){
+  const[showOv,setShowOv]=useState(false);
+  return(<div style={{position:'fixed',inset:0,zIndex:700,background:'rgba(0,0,0,.97)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'1.5rem',animation:'fi .25s ease both'}}>
+    <div style={{textAlign:'center',maxWidth:340,width:'100%'}}>
+      <div style={{fontSize:58,marginBottom:'.9rem'}}>🔒</div>
+      <h2 style={{color:'#fff',fontSize:21,fontWeight:700,marginBottom:'.4rem'}}>App Locked</h2>
+      <p style={{color:'rgba(255,255,255,.38)',fontSize:14,marginBottom:'1.4rem',lineHeight:1.5}}>Submit your assignment to unlock.</p>
+      <div style={{background:'rgba(255,255,255,.07)',borderRadius:16,padding:'1.1rem',marginBottom:'1.6rem',border:'1px solid rgba(255,255,255,.1)'}}>
+        <div style={{color:'#fff',fontWeight:700,fontSize:15,marginBottom:3}}>{asgn.title}</div>
+        <div style={{color:'rgba(255,255,255,.38)',fontSize:13}}>{cls?.name||'Unknown'} · Due {fD(asgn.dueDate)}</div>
+      </div>
+      <button className="btn" onClick={()=>{onUnlock();toast('App unlocked — great work!')}} style={{width:'100%',padding:'1rem',borderRadius:13,background:`linear-gradient(135deg,${ac},${ac}bb)`,color:'#fff',fontWeight:700,fontSize:16,marginBottom:'.9rem',boxShadow:`0 6px 26px ${ac}44`}} onMouseOver={e=>e.currentTarget.style.opacity='.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>✅ I Submitted — Unlock</button>
+      <button className="btn" onClick={()=>setShowOv(true)} style={{color:'rgba(255,255,255,.24)',fontSize:12,padding:'.4rem',background:'transparent'}}>Override with school ID</button>
+    </div>
+    {showOv&&<PwModal title="Override Lock" hint="Enter your school ID" ac={ac} onConfirm={pw=>{if(onOverride(pw)){toast('Unlocked');return true}return false}} onCancel={()=>setShowOv(false)}/>}
+  </div>);
+}
+
+/* ══ APP ROOT ════════════════════════════════════════ */
+function App(){
+  const[authUser,setAuthUser]=useState(null);const[authChecked,setAuthChecked]=useState(false);
+  const[showSplash,setShowSplash]=useState(false);
+  const[tab,setTab]=useState('school');const[tabFade,setTabFade]=useState(false);
+  const[bgIdx,setBgIdx]=useState(0);const[showSettings,setShowSettings]=useState(false);
+  const[sView,setSView]=useState('dashboard');
+  const[selClass,setSelClass]=useState(null);const[addForClass,setAddForClass]=useState(null);
+  const[timeWindow,setTimeWindow]=useState(7);
+  const[alarm,setAlarm]=useState(null);const[lockMode,setLockMode]=useState(null);
+  const[panicMode,setPanicMode]=useState(false);
+  const[sprintAsgn,setSprintAsgn]=useState(undefined);
+  const[lockDistr,setLockDistr]=useState(undefined);
+  const[aiAsgn,setAiAsgn]=useState(undefined);
+  const[schoolInfo,setSchoolInfo]=useState(null);
+  const[classes,setClasses]=useState([]);const[assignments,setAssignments]=useState([]);
+  const[tasks,setTasks]=useState([]);const[projects,setProjects]=useState([]);const[goals,setGoals]=useState([]);
+  const[parentPw,setParentPw]=useState('parent123');const[streak,setStreak]=useState({count:0,best:0,lastDate:null});
+  const{show:toast,TC}=useToast();
+  const saveRef=useRef(null);
+  const bg=BG[bgIdx];
+
+  useEffect(()=>{
+    const sess=getSess();
+    if(sess){const a=getAccts();if(a[sess]){loadD(sess);setAuthUser({username:sess,displayName:a[sess].displayName});setShowSplash(true)}}
+    setAuthChecked(true);
+  },[]);
+
+  const loadD=u=>{
+    const d=loadUD(u)||initData();
+    setSchoolInfo(d.schoolInfo||null);setClasses(d.classes||[]);setAssignments(d.assignments||[]);
+    setTasks(d.tasks||[]);setProjects(d.projects||[]);setGoals(d.goals||[]);
+    setParentPw(d.parentPw||'parent123');setBgIdx(d.bgIdx||0);setTimeWindow(d.timeWindow||7);
+    setStreak(d.streak||{count:0,best:0,lastDate:null});
+  };
+
+  const saveD=useCallback(()=>{
+    if(!authUser)return;
+    const ns=updateStreak(streak,assignments);
+    if(ns.count!==streak.count)setStreak(ns);
+    saveUD(authUser.username,{schoolInfo,classes,assignments,tasks,projects,goals,parentPw,bgIdx,timeWindow,streak:ns,savedAt:new Date().toISOString()});
+  },[authUser,schoolInfo,classes,assignments,tasks,projects,goals,parentPw,bgIdx,timeWindow,streak]);
+
+  useEffect(()=>{
+    if(!authUser)return;
+    clearTimeout(saveRef.current);
+    saveRef.current=setTimeout(saveD,400);
+    return()=>clearTimeout(saveRef.current);
+  },[schoolInfo,classes,assignments,tasks,projects,goals,parentPw,bgIdx,timeWindow]);
+
+  useEffect(()=>{
+    if(!authUser||!schoolInfo||lockMode||alarm)return;
+    const c=()=>{const h=assignments.find(a=>!a.submitted&&dU(a.dueDate)>=0&&dU(a.dueDate)<=3);if(h)setAlarm(h)};
+    c();const t=setInterval(c,30000);return()=>clearInterval(t);
+  },[assignments,authUser,schoolInfo,lockMode,alarm]);
+
+  const handleAuth=(u,acct)=>{
+    setAuthUser({username:u,displayName:acct.displayName});loadD(u);setShowSplash(true);
+    setSView('dashboard');setTab('school');setSelClass(null);setAddForClass(null);setAlarm(null);setLockMode(null);setPanicMode(false);
+  };
+  const handleLogout=()=>{
+    saveD();setSess(null);setAuthUser(null);setShowSplash(false);
+    setSchoolInfo(null);setClasses([]);setAssignments([]);setTasks([]);setProjects([]);setGoals([]);
+    setParentPw('parent123');setBgIdx(0);setTimeWindow(7);setStreak({count:0,best:0,lastDate:null});
+    setSView('dashboard');setTab('school');setShowSettings(false);toast('Signed out');
+  };
+  const clearAll=()=>{
+    saveUD(authUser.username,initData());
+    setSchoolInfo(null);setClasses([]);setAssignments([]);setTasks([]);setProjects([]);setGoals([]);
+    setParentPw('parent123');setBgIdx(0);setTimeWindow(7);setStreak({count:0,best:0,lastDate:null});
+    setSView('dashboard');setSelClass(null);setAddForClass(null);setAlarm(null);setLockMode(null);setPanicMode(false);
+    toast('All data deleted','warn');
+  };
+  const switchTab=t=>{if(t===tab)return;setTabFade(true);setTimeout(()=>{setTab(t);setTabFade(false)},220)};
+
+  const sBadge=assignments.filter(a=>!a.submitted&&(dU(a.dueDate)<0||dU(a.dueDate)<=3)).length;
+  const hBadge=tasks.filter(t=>!t.completed).length;
+
+  const fabVisible=(tab==='school'&&(sView==='dashboard'||sView==='classes'))||(tab==='home');
+
+  if(!authChecked)return null;
+  if(!authUser)return<><AuthScreen onAuth={handleAuth}/><TC/></>;
+
+  const bgCss={height:'100%',display:'flex',flexDirection:'column',background:`linear-gradient(145deg,${bg.c1},${bg.c2},${bg.c3})`,backgroundSize:'400% 400%',animation:'gradShift 12s ease infinite',position:'relative',overflow:'hidden'};
+
+  return(<div style={bgCss}>
+    {showSplash&&<Splash bg={bg} onDone={()=>setShowSplash(false)}/>}
+    <BgLayer bg={bg}/>
+
+    {/* Sprint Mode */}
+    {sprintAsgn!==undefined&&<SprintMode asgn={sprintAsgn} cls={sprintAsgn?classes.find(c=>c.id===sprintAsgn.classId):null} ac={bg.ac}
+      onDone={()=>{if(sprintAsgn)setAssignments(p=>p.map(a=>a.id===sprintAsgn.id?{...a,submitted:true}:a));setSprintAsgn(undefined);toast('Sprint done — submitted!')}}
+      onExit={()=>setSprintAsgn(undefined)}/>}
+
+    {/* Lock Distractions */}
+    {lockDistr!==undefined&&<LockDistractions asgn={lockDistr} onUnlock={()=>setLockDistr(undefined)} ac={bg.ac}/>}
+
+    {/* AI Panel */}
+    {aiAsgn!==undefined&&<AIPanel asgn={aiAsgn} cls={aiAsgn?classes.find(c=>c.id===aiAsgn.classId):null} allAsgns={assignments} onClose={()=>setAiAsgn(undefined)} ac={bg.ac}/>}
+
+    {/* Header */}
+    <div className="glass sd" style={{position:'relative',zIndex:10,padding:'.78rem 1.15rem',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
+      <div style={{display:'flex',alignItems:'center',gap:'.65rem'}}>
+        <div style={{width:32,height:32,borderRadius:9,background:`linear-gradient(135deg,${bg.ac},${bg.ac2})`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+          <span style={{color:'#fff',fontSize:14,fontWeight:900,letterSpacing:'-1px'}}>Σ</span>
+        </div>
+        <div>
+          <div style={{color:'#fff',fontWeight:800,fontSize:16,letterSpacing:'-.4px',lineHeight:1}}>index</div>
+          {schoolInfo&&<div style={{color:'rgba(255,255,255,.33)',fontSize:11,marginTop:1}}>{schoolInfo.name} · {schoolInfo.grade}</div>}
+        </div>
+      </div>
+      <div style={{display:'flex',alignItems:'center',gap:'.4rem'}}>
+        <div style={{display:'flex',alignItems:'center',gap:3,padding:'3px 7px',borderRadius:20,background:'rgba(74,222,128,.07)',border:'1px solid rgba(74,222,128,.16)'}}>
+          <div style={{width:5,height:5,borderRadius:'50%',background:'#4ade80'}}/>
+          <span style={{color:'rgba(74,222,128,.65)',fontSize:11}}>Saved</span>
+        </div>
+        <button className="btn" onClick={()=>setShowSettings(true)} style={{width:34,height:34,borderRadius:9,background:'rgba(255,255,255,.08)',color:'rgba(255,255,255,.68)',fontSize:15,border:'1px solid rgba(255,255,255,.09)'}} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,.08)'}>⚙️</button>
+      </div>
+    </div>
+
+    {/* Content */}
+    <div style={{flex:1,overflowY:'auto',position:'relative',zIndex:5,opacity:tabFade?0:1,transition:'opacity .2s ease',WebkitOverflowScrolling:'touch'}}>
+      {tab==='school'&&<>
+        {!schoolInfo&&<SchoolSetup onSave={info=>{setSchoolInfo(info);toast('School profile saved ✓')}} ac={bg.ac}/>}
+        {schoolInfo&&sView==='dashboard'&&<Dashboard user={schoolInfo} classes={classes} assignments={assignments} setAssignments={setAssignments} onClasses={()=>setSView('classes')} onAdd={()=>{setAddForClass(null);setSView('addAssignment')}} ac={bg.ac} timeWindow={timeWindow} setTimeWindow={setTimeWindow} toast={toast} streak={streak} panicMode={panicMode} setPanicMode={setPanicMode} onSprint={a=>setSprintAsgn(a)} onAI={(a,m)=>setAiAsgn(a)} onLock={a=>setLockDistr(a)}/>}
+        {schoolInfo&&sView==='classes'&&<ClassesView classes={classes} setClasses={setClasses} assignments={assignments} onSelect={c=>{setSelClass(c);setSView('classDetail')}} onBack={()=>setSView('dashboard')} ac={bg.ac} toast={toast}/>}
+        {schoolInfo&&sView==='classDetail'&&selClass&&<ClassDetail cls={selClass} assignments={assignments} setAssignments={setAssignments} onBack={()=>setSView('classes')} onAddHere={()=>{setAddForClass(selClass);setSView('addAssignment')}} ac={bg.ac} toast={toast}/>}
+        {schoolInfo&&sView==='addAssignment'&&<AddAssignment classes={classes} preClass={addForClass} onAdd={a=>{setAssignments(p=>[...p,a]);setAddForClass(null);setSView('dashboard')}} onBack={()=>{setAddForClass(null);setSView(selClass?'classDetail':'dashboard')}} ac={bg.ac} toast={toast}/>}
+      </>}
+      {tab==='home'&&<HomeTab tasks={tasks} setTasks={setTasks} projects={projects} setProjects={setProjects} goals={goals} setGoals={setGoals} parentPw={parentPw} setParentPw={setParentPw} ac={bg.ac} toast={toast}/>}
+    </div>
+
+    {/* Bottom Nav */}
+    <div className="bnav" style={{zIndex:85}}>
+      {[['school','🎓','School',sBadge],['home','🏠','Home',hBadge]].map(([t,ic,l,badge])=>(
+        <button key={t} className={`bnav-btn${tab===t?' active':''}`} onClick={()=>switchTab(t)} style={{color:tab===t?bg.ac:'rgba(255,255,255,.44)'}}>
+          <span>{ic}</span>
+          <span style={{fontSize:11,fontWeight:tab===t?700:500,transition:'all .22s'}}>{l}</span>
+          {badge>0&&<span style={{position:'absolute',top:6,left:'50%',marginLeft:6,minWidth:16,height:16,borderRadius:8,background:'#ef4444',fontSize:9,fontWeight:800,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',padding:'0 3px'}}>{badge}</span>}
+        </button>
+      ))}
+    </div>
+
+    {/* FAB */}
+    <FAB ac={bg.ac} visible={fabVisible}
+      onAddAssignment={()=>{setTab('school');if(!schoolInfo){toast('Set up school profile first','warn');return}if(classes.length===0){setSView('classes');return}setSView('addAssignment')}}
+      onAddClass={()=>{setTab('school');if(!schoolInfo){toast('Set up school profile first','warn');return}setSView('classes')}}
+      onAddTask={()=>setTab('home')}
+      onAddProject={()=>setTab('home')}/>
+
+    {/* Alarm */}
+    {alarm&&!lockMode&&<AlarmOverlay asgn={alarm} cls={classes.find(c=>c.id===alarm.classId)} onLater={()=>{setAlarm(null);toast('Reminder set')}} onNow={()=>{setLockMode(alarm);setAlarm(null)}} onShutdown={()=>setAlarm(null)}/>}
+
+    {/* Lock */}
+    {lockMode&&<LockScreen asgn={lockMode} cls={classes.find(c=>c.id===lockMode.classId)} ac={bg.ac} toast={toast} onUnlock={()=>{setAssignments(p=>p.map(a=>a.id===lockMode.id?{...a,submitted:true}:a));setLockMode(null)}} onOverride={pw=>{if(pw===schoolInfo?.schoolId){setLockMode(null);return true}return false}}/>}
+
+    {/* Settings */}
+    {showSettings&&<SettingsPanel bgIdx={bgIdx} setBgIdx={setBgIdx} ac={bg.ac} onClearAll={clearAll} onLogout={handleLogout} onClose={()=>setShowSettings(false)} username={authUser.username} displayName={authUser.displayName} streak={streak}/>}
+
+    <TC/>
+  </div>);
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
