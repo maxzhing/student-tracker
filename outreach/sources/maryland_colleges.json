@@ -1,0 +1,200 @@
+[
+ {
+  "name": "University of Maryland, Baltimore County",
+  "city": "Catonsville",
+  "county": "Baltimore County",
+  "url": "http://www.umbc.edu/"
+ },
+ {
+  "name": "Towson University",
+  "city": "Towson",
+  "county": "Baltimore County",
+  "url": "http://www.towson.edu/"
+ },
+ {
+  "name": "Bowie State University",
+  "city": "Bowie",
+  "county": "Prince George's County",
+  "url": "http://www.bowiestate.edu/"
+ },
+ {
+  "name": "Coppin State University",
+  "city": "Baltimore",
+  "county": "Baltimore City",
+  "url": "http://www.coppin.edu/"
+ },
+ {
+  "name": "Salisbury University",
+  "city": "Salisbury",
+  "county": "Wicomico County",
+  "url": "http://www.salisbury.edu/"
+ },
+ {
+  "name": "Frostburg State University",
+  "city": "Frostburg",
+  "county": "Allegany County",
+  "url": "http://www.frostburg.edu/"
+ },
+ {
+  "name": "University of Maryland Eastern Shore",
+  "city": "Princess Anne",
+  "county": "Somerset County",
+  "url": "http://www.umes.edu/"
+ },
+ {
+  "name": "St. Mary's College of Maryland",
+  "city": "St. Mary's City",
+  "county": "St. Mary's County",
+  "url": "http://www.smcm.edu/"
+ },
+ {
+  "name": "McDaniel College",
+  "city": "Westminster",
+  "county": "Carroll County",
+  "url": "http://www.mcdaniel.edu/"
+ },
+ {
+  "name": "Goucher College",
+  "city": "Towson",
+  "county": "Baltimore County",
+  "url": "http://www.goucher.edu/"
+ },
+ {
+  "name": "Washington College",
+  "city": "Chestertown",
+  "county": "Kent County",
+  "url": "http://www.washcoll.edu/"
+ },
+ {
+  "name": "Hood College",
+  "city": "Frederick",
+  "county": "Frederick County",
+  "url": "http://www.hood.edu/"
+ },
+ {
+  "name": "Mount St. Mary's University",
+  "city": "Emmitsburg",
+  "county": "Frederick County",
+  "url": "http://www.msmary.edu/"
+ },
+ {
+  "name": "United States Naval Academy",
+  "city": "Annapolis",
+  "county": "Anne Arundel County",
+  "url": "http://www.usna.edu/"
+ },
+ {
+  "name": "Montgomery College",
+  "city": "Rockville",
+  "county": "Montgomery County",
+  "url": "http://www.montgomerycollege.edu/"
+ },
+ {
+  "name": "Howard Community College",
+  "city": "Columbia",
+  "county": "Howard County",
+  "url": "http://www.howardcc.edu/"
+ },
+ {
+  "name": "Anne Arundel Community College",
+  "city": "Arnold",
+  "county": "Anne Arundel County",
+  "url": "http://www.aacc.edu/"
+ },
+ {
+  "name": "Community College of Baltimore County",
+  "city": "Catonsville",
+  "county": "Baltimore County",
+  "url": "http://www.ccbcmd.edu/"
+ },
+ {
+  "name": "Prince George's Community College",
+  "city": "Largo",
+  "county": "Prince George's County",
+  "url": "http://www.pgcc.edu/"
+ },
+ {
+  "name": "Frederick Community College",
+  "city": "Frederick",
+  "county": "Frederick County",
+  "url": "http://www.frederick.edu/"
+ },
+ {
+  "name": "Carroll Community College",
+  "city": "Westminster",
+  "county": "Carroll County",
+  "url": "http://www.carrollcc.edu/"
+ },
+ {
+  "name": "Harford Community College",
+  "city": "Bel Air",
+  "county": "Harford County",
+  "url": "http://www.harford.edu/"
+ },
+ {
+  "name": "Chesapeake College",
+  "city": "Wye Mills",
+  "county": "Queen Anne's County",
+  "url": "http://www.chesapeake.edu/"
+ },
+ {
+  "name": "Wor-Wic Community College",
+  "city": "Salisbury",
+  "county": "Wicomico County",
+  "url": "http://www.worwic.edu/"
+ },
+ {
+  "name": "Hagerstown Community College",
+  "city": "Hagerstown",
+  "county": "Washington County",
+  "url": "http://www.hagerstowncc.edu/"
+ },
+ {
+  "name": "College of Southern Maryland",
+  "city": "La Plata",
+  "county": "Charles County",
+  "url": "http://www.csmd.edu/"
+ },
+ {
+  "name": "Cecil College",
+  "city": "North East",
+  "county": "Cecil County",
+  "url": "http://www.cecil.edu/"
+ },
+ {
+  "name": "Allegany College of Maryland",
+  "city": "Cumberland",
+  "county": "Allegany County",
+  "url": "http://www.allegany.edu/"
+ },
+ {
+  "name": "Garrett College",
+  "city": "McHenry",
+  "county": "Garrett County",
+  "url": "http://www.garrettcollege.edu/"
+ },
+ {
+  "name": "Baltimore City Community College",
+  "city": "Baltimore",
+  "county": "Baltimore City",
+  "url": "http://www.bccc.edu/"
+ },
+ {
+  "name": "Stevenson University",
+  "city": "Owings Mills",
+  "county": "Baltimore County",
+  "url": "http://www.stevenson.edu/"
+ },
+ {
+  "name": "Maryland Institute College of Art",
+  "city": "Baltimore",
+  "county": "Baltimore City",
+  "url": "https://www.mica.edu/"
+ },
+ {
+  "name": "Capitol Technology University",
+  "city": "Laurel",
+  "county": "Prince George's County",
+  "url": "http://www.captechu.edu/"
+ }
+]

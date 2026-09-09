@@ -42,10 +42,10 @@
   "url": "http://www.purdue.edu/"
  },
  {
-  "name": "University of Michigan",
+  "name": "University of Michigan - Ann Arbor",
   "city": "Ann Arbor",
   "state": "MI",
-  "url": "http://www.umflint.edu/"
+  "url": "http://www.umich.edu/"
  },
  {
   "name": "Cornell University",
@@ -78,16 +78,10 @@
   "url": "http://www.ncsu.edu/"
  },
  {
-  "name": "University of Illinois at Urbana-Champaign",
-  "city": "Urbana",
-  "state": "IL",
-  "url": "https://illinois.edu/"
- },
- {
-  "name": "University of Wisconsin-Madison",
-  "city": "Madison",
-  "state": "WI",
-  "url": "http://www.wisc.edu/"
+  "name": "Virginia Tech",
+  "city": "Blacksburg",
+  "state": "VA",
+  "url": "https://www.vt.edu/"
  },
  {
   "name": "University of Minnesota",
@@ -96,16 +90,10 @@
   "url": "http://www.umn.edu/"
  },
  {
-  "name": "University of Texas at Austin",
-  "city": "Austin",
-  "state": "TX",
-  "url": "https://www.utexas.edu/"
- },
- {
-  "name": "Texas A&M University",
+  "name": "Texas A&M University - College Station",
   "city": "College Station",
   "state": "TX",
-  "url": "http://www.wtamu.edu/"
+  "url": "http://www.tamu.edu/"
  },
  {
   "name": "Rice University",
@@ -174,10 +162,10 @@
   "url": "http://www.uiowa.edu/"
  },
  {
-  "name": "Ohio State University",
+  "name": "Ohio State University - Columbus",
   "city": "Columbus",
   "state": "OH",
-  "url": "http://www.iastate.edu/"
+  "url": "https://www.osu.edu/"
  },
  {
   "name": "Case Western Reserve University",
@@ -234,18 +222,6 @@
   "url": "http://www.marquette.edu/"
  },
  {
-  "name": "Washington University in St. Louis",
-  "city": "St. Louis",
-  "state": "MO",
-  "url": "http://www.wustl.edu/"
- },
- {
-  "name": "University of Missouri",
-  "city": "Columbia",
-  "state": "MO",
-  "url": "http://www.missouri.edu/"
- },
- {
   "name": "Missouri University of Science and Technology",
   "city": "Rolla",
   "state": "MO",
@@ -264,10 +240,10 @@
   "url": "https://www.k-state.edu/"
  },
  {
-  "name": "University of Nebraska",
+  "name": "University of Nebraska, Lincoln",
   "city": "Lincoln",
   "state": "NE",
-  "url": "http://www.unomaha.edu/"
+  "url": "http://www.unl.edu/"
  },
  {
   "name": "University of Oklahoma",
@@ -282,10 +258,10 @@
   "url": "http://www.okstate.edu/"
  },
  {
-  "name": "University of Arkansas",
+  "name": "University of Arkansas - Fayetteville",
   "city": "Fayetteville",
   "state": "AR",
-  "url": "http://www.ku.edu/"
+  "url": "http://www.uark.edu/"
  },
  {
   "name": "Louisiana State University",
@@ -312,22 +288,16 @@
   "url": "http://www.auburn.edu/"
  },
  {
-  "name": "University of Alabama",
-  "city": "Tuscaloosa",
-  "state": "AL",
-  "url": "https://www.ua.edu/"
- },
- {
-  "name": "University of Alabama in Huntsville",
-  "city": "Huntsville",
-  "state": "AL",
-  "url": "http://www.uah.edu/"
- },
- {
   "name": "Vanderbilt University",
   "city": "Nashville",
   "state": "TN",
   "url": "http://www.vanderbilt.edu/"
+ },
+ {
+  "name": "University of Tennessee, Knoxville",
+  "city": "Knoxville",
+  "state": "TN",
+  "url": "http://www.utk.edu/"
  },
  {
   "name": "University of Memphis",
@@ -414,6 +384,12 @@
   "url": "http://www.erau.edu/"
  },
  {
+  "name": "University of Virginia, Charlottesville",
+  "city": "Charlottesville",
+  "state": "VA",
+  "url": "http://www.virginia.edu/"
+ },
+ {
   "name": "George Mason University",
   "city": "Fairfax",
   "state": "VA",
@@ -432,10 +408,10 @@
   "url": "http://www.wvu.edu/"
  },
  {
-  "name": "University of Maryland",
+  "name": "University of Maryland, College Park",
   "city": "College Park",
   "state": "MD",
-  "url": "http://www.uor.edu/"
+  "url": "http://www.umd.edu/"
  },
  {
   "name": "Georgetown University",
@@ -498,12 +474,6 @@
   "url": "http://www.pitt.edu/"
  },
  {
-  "name": "Rutgers University",
-  "city": "New Brunswick",
-  "state": "NJ",
-  "url": "http://www.rutgers.edu/"
- },
- {
   "name": "Stevens Institute of Technology",
   "city": "Hoboken",
   "state": "NJ",
@@ -514,6 +484,12 @@
   "city": "Newark",
   "state": "NJ",
   "url": "http://www.njit.edu/"
+ },
+ {
+  "name": "Columbia University",
+  "city": "New York",
+  "state": "NY",
+  "url": "http://www.columbia.edu/"
  },
  {
   "name": "New York University",
@@ -550,6 +526,18 @@
   "city": "Potsdam",
   "state": "NY",
   "url": "http://www.clarkson.edu/"
+ },
+ {
+  "name": "State University of New York at Stony Brook",
+  "city": "Stony Brook",
+  "state": "NY",
+  "url": "http://www.stonybrook.edu/"
+ },
+ {
+  "name": "State University of New York at Buffalo",
+  "city": "Buffalo",
+  "state": "NY",
+  "url": "http://www.buffalo.edu/"
  },
  {
   "name": "Yale University",
@@ -598,18 +586,6 @@
   "city": "Worcester",
   "state": "MA",
   "url": "http://www.wpi.edu/"
- },
- {
-  "name": "University of Massachusetts Amherst",
-  "city": "Amherst",
-  "state": "MA",
-  "url": "http://www.umass.edu/"
- },
- {
-  "name": "Olin College of Engineering",
-  "city": "Needham",
-  "state": "MA",
-  "url": "http://www.students.olin.edu/"
  },
  {
   "name": "Dartmouth College",
@@ -684,12 +660,6 @@
   "url": "http://www.sjsu.edu/"
  },
  {
-  "name": "California Polytechnic State University",
-  "city": "San Luis Obispo",
-  "state": "CA",
-  "url": "http://www.cpp.edu/"
- },
- {
   "name": "Santa Clara University",
   "city": "Santa Clara",
   "state": "CA",
@@ -735,7 +705,7 @@
   "name": "Montana State University",
   "city": "Bozeman",
   "state": "MT",
-  "url": "http://www.morgan.edu/"
+  "url": "http://www.montana.edu/"
  },
  {
   "name": "University of Wyoming",
@@ -754,12 +724,6 @@
   "city": "Fargo",
   "state": "ND",
   "url": "http://www.ndsu.edu/"
- },
- {
-  "name": "University of Alaska Fairbanks",
-  "city": "Fairbanks",
-  "state": "AK",
-  "url": "http://www.uaf.edu/"
  },
  {
   "name": "University of Hawaii at Manoa",
@@ -822,6 +786,12 @@
   "url": "http://www.morgan.edu/"
  },
  {
+  "name": "North Carolina A&T State University",
+  "city": "Greensboro",
+  "state": "NC",
+  "url": "http://www.ncat.edu/"
+ },
+ {
   "name": "Florida Agricultural and Mechanical University",
   "city": "Tallahassee",
   "state": "FL",
@@ -840,9 +810,51 @@
   "url": "http://www.jsums.edu/"
  },
  {
-  "name": "Alabama A&M University",
-  "city": "Normal",
+  "name": "University of Illinois Urbana-Champaign",
+  "city": "Urbana",
+  "state": "IL",
+  "url": "https://illinois.edu/"
+ },
+ {
+  "name": "University of Wisconsin - Madison",
+  "city": "Madison",
+  "state": "WI",
+  "url": "http://www.wisc.edu/"
+ },
+ {
+  "name": "The University of Texas at Austin",
+  "city": "Austin",
+  "state": "TX",
+  "url": "https://www.utexas.edu/"
+ },
+ {
+  "name": "Washington University, Saint Louis",
+  "city": "St. Louis",
+  "state": "MO",
+  "url": "http://www.wustl.edu/"
+ },
+ {
+  "name": "University of Alabama at Birmingham",
+  "city": "Birmingham",
   "state": "AL",
-  "url": "http://www.aamu.edu/"
+  "url": "http://www.uab.edu/"
+ },
+ {
+  "name": "University of Alabama at Huntsville",
+  "city": "Huntsville",
+  "state": "AL",
+  "url": "http://www.uah.edu/"
+ },
+ {
+  "name": "University of Massachusetts at Amherst",
+  "city": "Amherst",
+  "state": "MA",
+  "url": "http://www.umass.edu/"
+ },
+ {
+  "name": "University of Alaska - Fairbanks",
+  "city": "Fairbanks",
+  "state": "AK",
+  "url": "http://www.uaf.edu/"
  }
 ]

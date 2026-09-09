@@ -1,6 +1,6 @@
 # Outreach Bench
 
-A working board of **15,000 outreach opportunities** for a FIRST robotics team's
+A working board of **18,000 outreach opportunities**, with Maryland covered county by county for a FIRST robotics team's
 outreach lead. Pick your area, tap what you're after, and every card gives you a **real date**, a
 **real link**, the **exact steps to apply**, and a pre-written email.
 
@@ -13,8 +13,36 @@ one of two things, and says which on its face:
 
 | Kind | Count | What the link is |
 |---|---:|---|
-| **The organisation itself** | 1,830 | Its own website. 41 national programmes, 1,084 dated-event slots, and 705 slots across 141 universities. |
-| **Official directory** | 13,170 | The government or trade-body page whose entire job is to hand you the local contact — NCES school search, HUD's housing authority list, Feeding America's food bank locator, FIRST's team and event search, and 35 more. |
+| **The organisation itself** | 2,258 | Its own website. 41 national programmes, 1,112 dated-event slots, 715 university slots, and 390 slots at 65 named Maryland organisations. |
+| **Official directory** | 15,742 | The government or trade-body page whose entire job is to hand you the local contact — NCES school search, HUD's housing authority list, Feeding America's food bank locator, FIRST's team and event search, and 35 more. |
+
+## Maryland
+
+5,095 rows across **41 areas in all 24 Maryland jurisdictions**, plus 65 named
+Maryland destinations with real URLs: FIRST Chesapeake (the district that runs
+every official FIRST event in the state), the Maryland Science Center, Port
+Discovery, the National Aquarium, NASA Goddard, JHU Applied Physics Laboratory,
+every county library system, every county school district, and 33 Maryland
+colleges. The County facet appears when you filter to Maryland.
+
+## Track record: what this board will and will not claim
+
+Nobody publishes a dataset of which venues robotics teams have actually visited,
+so **this board never claims a number**. Inventing "12 teams went here" would be
+fabricated social proof — worse than none, because you would act on it. Instead
+every card carries one of four honest levels and tells you how to check:
+
+| Level | Means | How to verify |
+|---|---|---|
+| **Teams compete here** | Hosts official FIRST events | FIRST's own event list |
+| **Runs a youth STEM programme** | Has its own published youth education programme | Their site — name the programme in your email |
+| **Takes community bookings** | Books community events routinely; no robotics record | Ask them, then ask a nearby team |
+| **No public record** | Nothing public either way | Ask the teams near it first |
+
+Every card includes a **"Has a team actually been here?"** panel with a link to
+FIRST's team search and a ready-to-send message asking nearby teams whether they
+have worked with that venue, what the lead time was, who the right contact was,
+and what to watch out for. That is how you actually get proof.
 
 ## Dates are computed, not typed in
 
@@ -49,7 +77,11 @@ emailing a professor instead of the outreach office).
 
 - **University URLs** are taken from the public
   [`Hipo/university-domains-list`](https://github.com/Hipo/university-domains-list)
-  dataset of real institutions. Their **cities and states are hand-checked**, not
+  dataset of real institutions, matched **exactly by name only**. An earlier
+  version used fuzzy matching and silently produced wrong campuses — University
+  of Maryland resolved to `uor.edu` (University of Redlands), Ohio State to
+  `iastate.edu`, Texas A&M to `wtamu.edu`. Fuzzy matching is gone; a name that
+  does not match exactly is dropped rather than guessed. Their **cities and states are hand-checked**, not
   inferred — name-matching universities to cities was tried and rejected because
   it produced real errors (it put *St. Johns River State College*, which is in
   Florida, in State College, Pennsylvania). Only universities whose location is
@@ -72,8 +104,9 @@ emailing a professor instead of the outreach office).
    at every level, because they run everywhere.
 2. **What are you after?** One tap sets several filters: one afternoon, biggest
    impact, costs nothing, elementary kids, right now this season, can do
-   remotely, deadline within 60 days, has a fixed date, straight to the
-   organisation. Sort by deadline soonest, happening soonest, or by area.
+   remotely, next 30 days, has a public track record, deadline within 60 days,
+   has a fixed date, straight to the organisation. Sort by deadline soonest,
+   happening soonest, or by area.
 3. **Ask Claude** to find more, grouped by area, each with a link, a recurrence
    rule and its own application steps. If Claude isn't sure a website is real it
    returns null and picks a directory from the registry instead, so an AI result
@@ -86,6 +119,7 @@ outreach hours and people reached. Export the pipeline as CSV.
 
 ```
 vocab.py            223 metros, 44 venue types, 50 activities
+maryland.py         41 Maryland areas across 24 counties, 32 named organisations
 calendar.py         45 recurring events stored as date rules
 howto.py            44 application procedures, 220 steps
 verified.py         41 national programmes, hand-written, with real URLs

@@ -19,12 +19,14 @@ from vocab import METROS, TARGETS, PLAYS, SEASON_MONTHS      # noqa: E402
 from verified import VERIFIED                                 # noqa: E402
 from finders import FINDERS, GLOBAL                           # noqa: E402
 from howto import HOWTO                                       # noqa: E402
+import maryland as MD                                         # noqa: E402
 import importlib.util as _iu                                  # noqa: E402
 _spec = _iu.spec_from_file_location('outreach_calendar', os.path.join(HERE, 'calendar.py'))
 _cal = _iu.module_from_spec(_spec); _spec.loader.exec_module(_cal)
 EVENTS = _cal.EVENTS
 
-TOTAL = 15000
+TOTAL = 18000
+MD_DENSE = 2600          # local prospects generated specifically for Maryland
 
 BLURB = {
  "demo": "Set up in a public space, let people drive, and answer the same six questions two hundred times. The lowest-friction outreach there is.",
@@ -78,6 +80,14 @@ def jit(base, key, pct):
     span = max(1, int(base * pct)); return max(1, base - span + (h(key) % (2 * span + 1)))
 
 def main():
+    global METROS
+    # Maryland gets every county, replacing the three thin entries it had
+    METROS = [m for m in METROS if m[1] != "MD"]
+    MD_FROM = len(METROS)
+    METROS = METROS + [(a[0], "MD", "USA", "Mid-Atlantic", a[1], a[2]) for a in MD.AREAS]
+    METROS = [tuple(m) + ("", "") if len(m) == 4 else tuple(m) for m in METROS]
+    MD_IDX = list(range(MD_FROM, len(METROS)))
+
     tkeys = [t[0] for t in TARGETS]
     fkeys = sorted({t[0] for t in TARGETS})
     # index 0..n-1 are the US directories; n.. are the worldwide ones
@@ -101,6 +111,24 @@ def main():
             uni_rows.append([ui, pi, jit(p[6], k + "h", .25), jit(p[7], k + "r", .4),
                              max(1, p[9] - (h(k + "i") % 2)), p[10]])
 
+    # --- Maryland named organisations, each paired with activities that suit it
+    md_cols = json.load(open(os.path.join(HERE, "sources", "maryland_colleges.json")))
+    md_orgs = [[o[0], o[1], o[2], o[3], o[4], o[5], o[6], o[7]] for o in MD.ORGS] + \
+              [[c["name"], c["city"], c["county"], c["url"], "univ", "programme",
+                "A Maryland college or university with a K-12 outreach remit.",
+                "Look for the K-12 Outreach, Pre-College or Community Engagement office."] for c in md_cols]
+    md_area_of = {a[0]: MD_FROM + i for i, a in enumerate(MD.AREAS)}
+    md_org_rows = []
+    for oi, o in enumerate(md_orgs):
+        vk = o[4]
+        fits = [i for i, p in enumerate(PLAYS) if vk in p[12]] or list(range(len(PLAYS)))
+        for r in range(6):
+            pi = fits[(oi * 3 + r * 5) % len(fits)]
+            p = PLAYS[pi]; k = f"md{oi}:{pi}"
+            md_org_rows.append([oi, pi, md_area_of.get(o[1], MD_FROM),
+                                jit(p[6], k + "h", .25), jit(p[7], k + "r", .4),
+                                max(1, p[9] - (h(k + "i") % 2)), SEASON_OVERRIDE.get(vk, p[10])])
+
     # --- dated events: a rule-computed date and the organiser's own URL
     ev_rows = []
     for ei, e in enumerate(EVENTS):
@@ -119,8 +147,25 @@ def main():
 
     # --- local prospects: a real activity, a real venue type, a real metro
     pairs = sorted((pi, tkeys.index(tk)) for pi, p in enumerate(PLAYS) for tk in p[12] if tk in tkeys)
-    need = TOTAL - len(VERIFIED) - len(uni_rows) - len(ev_rows)
     leads, seen, rnd = [], set(), 0
+
+    # Maryland first, densely: every activity x venue x county the state can carry
+    md_made = 0
+    for rnd_md in range(60):
+        if md_made >= MD_DENSE: break
+        for n2, (pi, ti) in enumerate(pairs):
+            if md_made >= MD_DENSE: break
+            mi = MD_IDX[(n2 * 7 + rnd_md * 11 + pi) % len(MD_IDX)]
+            if (pi, ti, mi) in seen: continue
+            seen.add((pi, ti, mi))
+            p, t, m = PLAYS[pi], TARGETS[ti], METROS[mi]
+            k = f"{p[0]}:{t[0]}:{m[0]}MD"
+            leads.append([pi, ti, mi, jit(p[6], k + "h", .25), jit(p[7], k + "r", .4),
+                          max(1, p[9] - (h(k + "i") % 2)), SEASON_OVERRIDE.get(t[0], p[10]),
+                          finder_idx[t[0]]])
+            md_made += 1
+
+    need = TOTAL - len(VERIFIED) - len(uni_rows) - len(ev_rows) - len(md_org_rows)
     while len(leads) < need and rnd <= 40:
         for n, (pi, ti) in enumerate(pairs):
             if len(leads) >= need: break
@@ -141,9 +186,11 @@ def main():
     leads.sort(key=lambda r: h(f"{r[0]}-{r[1]}-{r[2]}"))
 
     data = {
-        "counts": {"total": len(leads) + len(VERIFIED) + len(uni_rows) + len(ev_rows),
+        "counts": {"total": len(leads) + len(VERIFIED) + len(uni_rows) + len(ev_rows) + len(md_org_rows),
                    "verified": len(VERIFIED), "universities": len(uni_rows), "local": len(leads),
                    "events": len(ev_rows), "eventKinds": len(EVENTS),
+                   "mdOrgs": len(md_orgs), "mdOrgRows": len(md_org_rows),
+                   "mdAreas": len(MD.AREAS), "mdCounties": len({a[1] for a in MD.AREAS}),
                    "metros": len(METROS), "states": len({m[1] for m in METROS}),
                    "finders": len({f[1] for f in finder_list})},
         "metros":  [list(m) for m in METROS],
@@ -151,6 +198,8 @@ def main():
         "howto":   [[HOWTO[k][0], HOWTO[k][1], HOWTO[k][2], HOWTO[k][3]] for k in tkeys],
         "events":  [[e[1], list(e[2]), e[3], e[4], e[5], e[6], e[7], e[9], e[10]] for e in EVENTS],
         "evRows":  ev_rows,
+        "mdOrgs":  md_orgs,
+        "mdOrgRows": md_org_rows,
         "finders": finder_list,
         "plays":   [[p[1], p[2], p[3], p[4], p[5], p[8], p[11], p[13], p[14], BLURB.get(p[0], "")] for p in PLAYS],
         "leads":   leads,
@@ -182,9 +231,13 @@ def main():
         + body[:split] + "</head>\n<body>\n" + body[split:] + "\n</body>\n</html>\n")
 
     c = data["counts"]
+    md_local = sum(1 for r in leads if METROS[r[2]][1] == "MD")
     print(f"{c['total']} opportunities: {c['verified']} national programmes, "
           f"{c['universities']} university slots, {c['events']} dated-event slots "
           f"({c['eventKinds']} recurring events), {c['local']} local prospects")
+    print(f"Maryland: {md_local + c['mdOrgRows']} rows -- {c['mdOrgRows']} at "
+          f"{c['mdOrgs']} named organisations, {md_local} local prospects, "
+          f"across {c['mdAreas']} areas in {c['mdCounties']} counties")
     print(f"{c['metros']} metros across {c['states']} states/provinces; "
           f"{c['finders']} distinct official directories; 0 search-engine links")
     print(f"payload {len(compact)/1024:.0f} KB")

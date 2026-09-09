@@ -150,6 +150,16 @@ a{color:var(--accent-ink)}
 .chip.due{background:var(--ochre-wash);border-color:var(--ochre-line);color:var(--ochre);font-weight:500}
 .chip.now{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:500}
 .chip.gone{opacity:.65}
+.chip.tr{border-style:dashed}
+.chip.tr.hosts{background:var(--ok-wash,var(--accent-wash));border-color:var(--ok);color:var(--ok);border-style:solid;font-weight:500}
+.chip.tr.programme{border-color:var(--accent-line);color:var(--accent-ink);border-style:solid}
+.askteam{background:var(--surface-2);border:1px solid var(--rule);border-left:3px solid var(--ochre);
+  border-radius:9px;padding:12px 13px;margin-top:11px}
+.askteam h4{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ochre);margin:0 0 7px;font-weight:500}
+.askteam p{margin:0 0 7px;font-size:13px;color:var(--ink-2);line-height:1.5}
+.askteam textarea{width:100%;min-height:96px;padding:9px 10px;border:1px solid var(--rule-2);
+  border-radius:7px;background:var(--surface);font-family:var(--f-mono);font-size:11px;line-height:1.55;resize:vertical}
 .steps{margin:0;padding:0 0 0 0;list-style:none;counter-reset:st}
 .steps li{position:relative;padding-left:26px;margin-bottom:7px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
 .steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:1px;width:18px;height:18px;
@@ -444,6 +454,20 @@ function dateOn(o, rule, leadWeeks) {
   o.leadWeeks = leadWeeks;
 }
 
+/* ---------- track record ----------
+   There is no dataset of which venues robotics teams have actually visited, so
+   this never claims a number. It states what is publicly checkable, and how. */
+const TRACK = {
+  hosts:     ["Teams compete here", "This venue hosts official FIRST events, so teams are demonstrably there every season.",
+              "Check it on FIRST's own event list for your district."],
+  programme: ["Runs a youth STEM programme", "The organisation runs its own published youth education or STEM programme.",
+              "Check it on their site before you write \u2014 name the programme in your email."],
+  open:      ["Takes community bookings", "This venue books community events as a matter of course, but there is no public record of robotics teams specifically.",
+              "Ask them how many school groups they host, then ask a nearby team."],
+  unknown:   ["No public record", "Nobody publishes which venues robotics teams have visited, and this one has no public record either way.",
+              "Ask the teams near it first \u2014 this card gives you the link and the message to send."],
+};
+
 /* ---------- decode ---------- */
 const ALL = [];
 const LINK_DIRECT = "direct", LINK_FINDER = "finder";
@@ -484,6 +508,35 @@ DATA.uniRows.forEach((r, i) => {
   });
 });
 
+DATA.mdOrgRows.forEach((r, i) => {
+  const [oi, pi, mi, hours, reach, impact, season] = r;
+  const [name, city, county, url, vk, track, what, ask] = DATA.mdOrgs[oi];
+  const p = DATA.plays[pi];
+  ALL.push({
+    id: "M-" + String(i + 1).padStart(4, "0"), tier: "named",
+    title: p[0], host: name,
+    city, state: "MD", country: "USA", region: "Mid-Atlantic",
+    area: city + ", MD", county,
+    category: p[1], audience: p[2], format: p[3],
+    season, window: DATA.seasonMonths[season] || season, deadline: "",
+    duration: p[4], hours, reach, impact, effort: p[5], cost: p[6],
+    role: "Education, outreach or programmes contact", applyType: "Email",
+    blurb: what, applyNote: ask, track,
+    need: p[7], bring: p[8], tags: ["maryland"],
+    howto: [[
+      "Open " + name + "'s own site from the link on this card.",
+      ask,
+      "Write as a student. Name your team, your town and the specific thing you are offering.",
+      "Give two or three dates rather than asking which suits them.",
+      "If nothing comes back in two weeks, telephone. Organisations this size answer the phone.",
+    ], "A short description, adult supervision, dates you can commit to, and often a certificate of insurance.",
+       "1-3 weeks. Larger institutions are slower; libraries and county programmes are quicker.",
+       "Writing to a general address. Find the education, programmes or outreach contact by name."],
+    link: { url, label: name, kind: LINK_DIRECT, what, todo: ask },
+    leadIn: 6,
+  });
+});
+
 DATA.evRows.forEach((r, i) => {
   const [ei, ti, mi, hours, reach, impact] = r;
   const e = DATA.events[ei], t = DATA.targets[ti], m = DATA.metros[mi];
@@ -511,6 +564,7 @@ DATA.leads.forEach((r, i) => {
     id: "L-" + String(i + 1).padStart(4, "0"), tier: "local",
     title: p[0], host: t[0],
     city: m[0], state: m[1], country: m[2], region: m[3], area: m[0] + ", " + m[1],
+    county: m[4] || "",
     category: p[1], audience: p[2], format: p[3],
     season, window: DATA.seasonMonths[season] || season,
     deadline: "Contact " + t[3] + " ahead",
@@ -523,6 +577,9 @@ DATA.leads.forEach((r, i) => {
 
 const UNIV_HOWTO = DATA.howto[DATA.targets.findIndex(t => /University engineering/i.test(t[0]))];
 ALL.forEach(o => {
+  if (!o.track) o.track = (o.tier === "local") ? "unknown" : "programme";
+  o.trackLabel = TRACK[o.track][0];
+  if (!o.county) o.county = "";
   if (o.tier === "university") { o.howto = UNIV_HOWTO; o.leadIn = 8; }
   if (o.tier === "programme") {
     o.leadIn = weeksFrom(o.deadline) || 8;
@@ -543,9 +600,11 @@ ALL.forEach(o => {
   o.domain = (o.link.url.match(/^https?:\/\/(?:www\.)?([^/]+)/) || [, o.link.url])[1];
   o.hay = [o.title, o.host, o.area, o.region, o.country, o.category, o.audience, o.format,
            o.season, o.blurb, o.domain, (o.tags || []).join(" "), o.whenLabel, o.byLabel,
+           o.county || "", o.trackLabel,
            (o.need || []).join(" "), (o.bring || []).join(" ")].join(" ").toLowerCase();
   o.fit = o.impact * 2.2 + (EFFORT_RANK[o.effort] || 2)
-        + (o.tier === "programme" ? 2.4 : o.tier === "dated" ? 1.8 : o.tier === "university" ? 1.1 : 0)
+        + (o.tier === "programme" ? 2.4 : o.tier === "named" ? 2.2 : o.tier === "dated" ? 1.8 : o.tier === "university" ? 1.1 : 0)
+        + (o.track === "hosts" ? 1.5 : o.track === "programme" ? 0.7 : 0)
         + (o.link.kind === LINK_DIRECT ? 1.0 : 0) + Math.log10(o.reach + 10)
         + (o.daysToApply >= 0 && o.daysToApply < 90 ? 1.2 : 0);
 });
@@ -563,7 +622,8 @@ const FACETS = [
   { key:"category", label:"Activity" }, { key:"season", label:"Season" },
   { key:"audience", label:"Who it reaches" }, { key:"effort", label:"Effort" },
   { key:"format", label:"Format" }, { key:"linkKind", label:"Link goes to" },
-  { key:"region", label:"Region" },
+  { key:"region", label:"Region" }, { key:"trackLabel", label:"Track record" },
+  { key:"county", label:"County" },
 ];
 ALL.forEach(o => o.linkKind = o.link.kind === LINK_DIRECT
   ? "The organisation itself" : "Official directory");
@@ -585,6 +645,10 @@ const PRESETS = {
     test: o => o.season === THIS_SEASON },
   remote: { label:"Can do remotely", icon:'<circle cx="12" cy="12" r="8"></circle><path d="M4 12h16M12 4a14 14 0 010 16M12 4a14 14 0 000 16"></path>',
     test: o => o.format !== "In person" },
+  urgent: { label:"Next 30 days", icon:'<circle cx="12" cy="12" r="8"></circle><path d="M12 7v5l3 2"></path><path d="M12 3v1"></path>',
+    test: o => o.daysToStart <= 30 || (o.daysToApply <= 30 && o.daysToApply >= -30) },
+  proven: { label:"Has a public track record", icon:'<path d="M20 6L9 17l-5-5"></path>',
+    test: o => o.track === "hosts" || o.track === "programme" },
   soon: { label:"Deadline within 60 days", icon:'<rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M4 10h16M9 3v4M15 3v4M12 14v3"></path>',
     test: o => o.daysToApply <= 60 },
   dated: { label:"Has a fixed date", icon:'<rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M4 10h16M8 14h3v3H8z"></path>',
@@ -619,6 +683,21 @@ function passes(o, skip) {
   }
   return true;
 }
+/* keep near-order but stop the same activity repeating down the page */
+function spread(list, maxRun) {
+  const out = [], defer = [];
+  let last = null, run = 0;
+  for (const o of list) {
+    if (o.title === last && run >= maxRun) { defer.push(o); continue; }
+    if (o.title === last) run++; else { last = o.title; run = 1; }
+    out.push(o);
+    if (defer.length) {
+      const j = defer.findIndex(d => d.title !== last);
+      if (j >= 0) { const d = defer.splice(j, 1)[0]; out.push(d); last = d.title; run = 1; }
+    }
+  }
+  return out.concat(defer);
+}
 function results() {
   const cmp = {
     fit:    (a,b) => b.fit - a.fit,
@@ -630,7 +709,7 @@ function results() {
     reach:  (a,b) => b.reach - a.reach,
     hours:  (a,b) => a.hours - b.hours,
   }[sortBy];
-  return ALL.filter(o => passes(o, null)).sort(cmp);
+  return spread(ALL.filter(o => passes(o, null)).sort(cmp), 2);
 }
 
 /* ---------- area selector ---------- */
@@ -705,7 +784,7 @@ function renderFacets() {
   if ($("#adv").hidden) return;
   $("#adv").innerHTML = FACETS.map(f => {
     const counts = new Map();
-    ALL.forEach(o => { if (passes(o, f.key)) counts.set(o[f.key], (counts.get(o[f.key]) || 0) + 1); });
+    ALL.forEach(o => { if (o[f.key] && passes(o, f.key)) counts.set(o[f.key], (counts.get(o[f.key]) || 0) + 1); });
     sel[f.key].forEach(v => { if (!counts.has(v)) counts.set(v, 0); });
     const opts = [...counts.entries()].sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0])));
     const open = f.expanded || opts.length <= 6;
@@ -744,12 +823,13 @@ function cardHTML(o) {
       <span>
         <span class="ct-title">${esc(o.title)}</span>
         <span class="ct-sub">${esc(o.host)}</span>
-        <span class="ct-sub"><svg class="pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.2-6-9.5A6 6 0 0118 11.5C18 15.8 12 21 12 21z"></path><circle cx="12" cy="11" r="2"></circle></svg>${esc(o.area)}${st ? ` &middot; <b>${esc(st)}</b>` : ""}</span>
+        <span class="ct-sub"><svg class="pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.2-6-9.5A6 6 0 0118 11.5C18 15.8 12 21 12 21z"></path><circle cx="12" cy="11" r="2"></circle></svg>${esc(o.area)}${o.county ? " &middot; " + esc(o.county) : ""}${st ? ` &middot; <b>${esc(st)}</b>` : ""}</span>
       </span>
       <svg class="caret" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
     </button>
     <div class="crow">
       <span class="chip cat">${esc(o.category)}</span>
+      <span class="chip tr ${o.track}">${esc(o.trackLabel)}</span>
       <span class="chip when">${esc(o.whenLabel)}</span>
       ${dueChip(o)}
       <span class="chip${o.effort === "Low" ? " ok" : ""}">${esc(o.effort)} effort</span>
@@ -826,6 +906,16 @@ function detailHTML(o) {
       </div>
     </div>
     <div>
+      <div class="askteam">
+        <h4>Has a team actually been here?</h4>
+        <p><b>${esc(TRACK[o.track][0])}.</b> ${esc(TRACK[o.track][1])}</p>
+        <p>${esc(TRACK[o.track][2])}</p>
+        <div class="acts">
+          <a class="btn sm" target="_blank" rel="noopener" href="https://www.firstinspires.org/team-event-search">Find teams near here &#8599;</a>
+          <button class="btn sm" data-copyteam="${o.id}">Copy the message</button>
+        </div>
+        <textarea data-teammsg="${o.id}" spellcheck="true">${esc(teamAsk(o))}</textarea>
+      </div>
       <div class="panel">
         <h4>Who to contact</h4>
         <dl class="dl" style="margin-top:0">
@@ -850,6 +940,25 @@ function detailHTML(o) {
         </div>
       </div>
     </div>`;
+}
+
+/* the message that actually gets you proof: ask the teams who would know */
+function teamAsk(o) {
+  const team = store.team || "[TEAM NUMBER AND NAME]";
+  const where = o.area === "Nationwide"
+    ? "which runs nationally" : "in " + o.area + (o.county ? " (" + o.county + ")" : "");
+  return `Hi \u2014 we're ${team}, a FIRST team near ${store.city || "[YOUR CITY]"}.
+
+We're looking at running ${o.title.toLowerCase()} with ${o.host}, ${where}, and I'd rather learn from you than find out the hard way.
+
+Have you or anyone on your team worked with them?
+
+  \u2022 Did they say yes, and how long did it take?
+  \u2022 Who was the right person to write to?
+  \u2022 Anything you'd warn us about \u2014 space, power, insurance, age limits?
+  \u2022 Would you do it again?
+
+Happy to return the favour with anything we've learned. Thanks!`;
 }
 
 /* ---------- the email, composed locally ---------- */
@@ -978,6 +1087,10 @@ $("#grid").addEventListener("click", e => {
   if (cp) { const ta = document.querySelector(`[data-draft="${cp.dataset.copy}"]`);
     navigator.clipboard?.writeText(ta.value).then(() => { cp.textContent = "Copied";
       setTimeout(() => cp.textContent = "Copy email", 1600); }).catch(() => ta.select()); return; }
+  const ct = e.target.closest("[data-copyteam]");
+  if (ct) { const ta = document.querySelector(`[data-teammsg="${ct.dataset.copyteam}"]`);
+    navigator.clipboard?.writeText(ta.value).then(() => { ct.textContent = "Copied";
+      setTimeout(() => ct.textContent = "Copy the message", 1600); }).catch(() => ta.select()); return; }
   const ad = e.target.closest("[data-ai-draft]");
   if (ad) aiDraftFor(ad.dataset.aiDraft);
 });
@@ -1010,17 +1123,17 @@ $("#themeBtn").addEventListener("click", () => {
 $("#csvBtn").addEventListener("click", async () => {
   const ids = Object.keys(store.status);
   const rows = ids.length ? ALL.filter(o => store.status[o.id]) : current.slice(0, shown);
-  const head = ["Status","Hours logged","Activity","Where","City","State","Country",
+  const head = ["Status","Hours logged","Activity","Where","City","State","Country","County",
     "Happens","Starts","Ask them by","Days until deadline","Recurrence rule",
-    "Ask for","Via","How to apply","They will ask for","Reply time","What kills it",
+    "Ask for","Via","Track record","How to check it","How to apply","They will ask for","Reply time","What kills it",
     "Audience","Effort","Est. hours","Est. reached","Impact","Cost",
     "Link type","Link","What that link is"];
   const cell = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const iso = d => d.toISOString().slice(0, 10);
   const csv = [head.map(cell).join(",")].concat(rows.map(o => [store.status[o.id] || "",
     store.logged[o.id] ?? "", o.title, o.host, o.city, o.state, o.country,
-    o.whenLabel, iso(o.start), iso(o.by), o.daysToApply, o.rule ? o.ruleText : "season window: " + o.season,
-    o.role, o.applyType,
+    o.county, o.whenLabel, iso(o.start), iso(o.by), o.daysToApply, o.rule ? o.ruleText : "season window: " + o.season,
+    o.role, o.applyType, TRACK[o.track][0], TRACK[o.track][2],
     (o.howto?.[0] || []).map((x, i) => (i + 1) + ". " + x).join(" "),
     o.howto?.[1] || "", o.howto?.[2] || "", o.howto?.[3] || "",
     o.audience, o.effort, o.hours, o.reach, o.impact + "/5",
